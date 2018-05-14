@@ -93,6 +93,16 @@ drawImageTransparent = function(image, x, y)
 	term.setCursorPos(cx,cy)
 end
 
+drawImageCenter = function(image, x, y)
+	local scr_x, scr_y = term.getSize()
+	return drawImage(image, ((x or scr_x)/2) - (#image[1][1]/2), ((y or scr_y)/2) - (#image[1]/2))
+end
+
+drawImageCenterTransparent = function(image, x, y)
+	local scr_x, scr_y = term.getSize()
+	return drawImageTransparent(image, ((x or scr_x)/2) - (#image[1][1]/2), ((y or scr_y)/2) - (#image[1]/2))
+end
+
 flipX = function(image)
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
@@ -113,8 +123,96 @@ flipY = function(image)
 	return output
 end
 
-local setSubString = function(str,pos,ins)
-	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
+grayOut = function(image)
+	local output = {{},{},{}}
+	local chart = {
+		["0"] = "0",
+		["1"] = "8",
+		["2"] = "8",
+		["3"] = "8",
+		["4"] = "8",
+		["5"] = "8",
+		["6"] = "8",
+		["7"] = "7",
+		["8"] = "8",
+		["9"] = "7",
+		["a"] = "7",
+		["b"] = "7",
+		["c"] = "7",
+		["d"] = "7",
+		["e"] = "7",
+		["f"] = "f"
+	}
+	for k,v in pairs(chart) do
+		for y = 1, #image[1] do
+			output[1][y] = image[1][y]:gsub(k,v)
+			output[2][y] = image[2][y]:gsub(k,v)
+			output[3][y] = image[3][y]:gsub(k,v)
+		end
+	end
+	return output
+end
+
+greyOut = grayOut
+
+lighten = function(image)
+	local output = {{},{},{}}
+	local chart = {
+		["0"] = "0",
+		["1"] = "4",
+		["2"] = "6",
+		["3"] = "0",
+		["4"] = "0",
+		["5"] = "0",
+		["6"] = "0",
+		["7"] = "8",
+		["8"] = "0",
+		["9"] = "3",
+		["a"] = "2",
+		["b"] = "9",
+		["c"] = "1",
+		["d"] = "5",
+		["e"] = "2",
+		["f"] = "7"
+	}
+	for k,v in pairs(chart) do
+		for y = 1, #image[1] do
+			output[1][y] = image[1][y]:gsub(k,v)
+			output[2][y] = image[2][y]:gsub(k,v)
+			output[3][y] = image[3][y]:gsub(k,v)
+		end
+	end
+	return output
+end
+
+darken = function(image)
+	local output = {{},{},{}}
+	local chart = {
+		["0"] = "0",
+		["1"] = "4",
+		["2"] = "6",
+		["3"] = "0",
+		["4"] = "0",
+		["5"] = "0",
+		["6"] = "0",
+		["7"] = "8",
+		["8"] = "0",
+		["9"] = "3",
+		["a"] = "2",
+		["b"] = "9",
+		["c"] = "1",
+		["d"] = "5",
+		["e"] = "2",
+		["f"] = "7"
+	}
+	for k,v in pairs(chart) do
+		for y = 1, #image[1] do
+			output[1][y] = image[1][y]:gsub(v,k)
+			output[2][y] = image[2][y]:gsub(v,k)
+			output[3][y] = image[3][y]:gsub(v,k)
+		end
+	end
+	return output
 end
 
 stretchImage = function(_image, sx, sy, noRepeat)
@@ -139,4 +237,9 @@ stretchImage = function(_image, sx, sy, noRepeat)
 		end
 	end
 	return output
+end
+
+pixelateImage = function(image,amntX, amntY)
+	local imageX, imageY = #image[1][1], #image[1]
+	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
 end
