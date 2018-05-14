@@ -10,6 +10,10 @@ local deepCopy = function(tbl)
 	return output
 end
 
+local stringWrite = function(str, pos, ins)
+	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
+end
+
 loadImageData = function(image, background) --string image
 	image = image:lower()
 	local output = {{},{},{}} --char, text, back
