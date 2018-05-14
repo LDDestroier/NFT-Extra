@@ -1,5 +1,15 @@
 local tchar, bchar = string.char(31), string.char(30)
 
+local round = function(x) return x + 0.5 - (x + 0.5) % 1 end
+
+local deepCopy = function(tbl)
+	local output = {}
+	for k,v in pairs(tbl) do
+		output[k] = v
+	end
+	return output
+end
+
 loadImageData = function(image, background) --string image
 	image = image:lower()
 	local output = {{},{},{}} --char, text, back
@@ -81,4 +91,55 @@ drawImageTransparent = function(image, x, y)
 		end
 	end
 	term.setCursorPos(cx,cy)
+end
+
+flipX = function(image)
+	local output = {{},{},{}}
+	for y = 1, #image[1] do
+		output[1][y] = image[1][y]:reverse()
+		output[2][y] = image[2][y]:reverse()
+		output[3][y] = image[3][y]:reverse()
+	end
+	return output
+end
+
+flipY = function(image)
+	local output = {{},{},{}}
+	for y = #image[1], 1 do
+		output[1][#output[1]+1] = image[1][y]
+		output[2][#output[2]+1] = image[2][y]
+		output[3][#output[3]+1] = image[3][y]
+	end
+	return output
+end
+
+local setSubString = function(str,pos,ins)
+	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
+end
+
+stretchImage = function(_image, sx, sy, noRepeat)
+	local output = {{},{},{}}
+	local image = deepCopy(_image)
+	if sx < 0 then image = flipX(image) end
+	if sy < 0 then image = flipY(image) end
+	sx, sy = math.abs(sx), math.abs(sy)
+	local imageX, imageY = #image[1][1], #image[1]
+	local tx, ty
+	for y = 1, sy do
+		output[1] = {}
+		output[2] = {}
+		output[3] = {}
+		for x = 1, sx do
+			tx = round((x / sx) * imageX)
+			ty = round((y / sy) * imageY)
+			if noRepeat then
+				output[1][y] = (output[1][y] or "")..((tx == (x/sx)*imageX) and image[1][ty]:sub(tx,tx) or " ")
+			else
+				output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
+			end
+			output[2][y] = (output[2][y] or "")..image[2][ty]:sub(tx,tx)
+			output[3][y] = (output[3][y] or "")..image[3][ty]:sub(tx,tx)
+		end
+	end
+	return output
 end
