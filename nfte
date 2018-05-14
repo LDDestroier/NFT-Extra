@@ -1,0 +1,84 @@
+local tchar, bchar = string.char(31), string.char(30)
+
+loadImageData = function(image, background) --string image
+	image = image:lower()
+	local output = {{},{},{}} --char, text, back
+	local y = 1
+	local text, back = " ", background or " "
+	local doSkip, c1, c2 = false
+	for i = 1, #image do
+		if doSkip then
+			doSkip = false
+		else
+			output[1][y] = output[1][y] or ""
+			output[2][y] = output[2][y] or ""
+			output[3][y] = output[3][y] or ""
+			c1, c2 = image:sub(i,i), image:sub(i+1,i+1)
+			if c1 == tchar then
+				text = c2
+				doSkip = true
+			elseif c1 == bchar then
+				back = c2
+				doSkip = true
+			elseif c1 == "\n" then
+				y = y + 1
+				text, back = " ", background or " "
+			else
+				output[1][y] = output[1][y]..c1
+				output[2][y] = output[2][y]..text
+				output[3][y] = output[3][y]..back
+			end
+		end
+	end
+	return output
+end
+
+loadImage = function(path, background)
+	local file = fs.open(path,"r")
+	local output = loadImageData(file.readAll(), background)
+	file.close()
+	return output
+end
+
+unloadImage = function(image)
+	local output = ""
+	local text, back = " ", " "
+	local c, t, b
+	for y = 1, #image[1] do
+		for x = 1, #image[1][y] do
+			c, t, b = image[1][y]:sub(x,x), image[2][y]:sub(x,x), image[3][y]:sub(x,x)
+			if (t ~= text) or (x + y == 2) then output = output..tchar..t end
+			if (b ~= back) or (x + y == 2) then output = output..bchar..b end
+			output = output..c
+		end
+		if y ~= #image[1] then
+			output = output.."\n"
+			text, back = " ", " "
+		end
+	end
+	return output
+end
+
+drawImage = function(image, x, y)
+	local cx, cy = term.getCursorPos()
+	for iy = 1, #image[1] do
+		term.setCursorPos(x,y+(iy-1))
+		term.blit(image[1][iy], image[2][iy], image[3][iy])
+	end
+	term.setCursorPos(cx,cy)
+end
+
+drawImageTransparent = function(image, x, y)
+	local cx, cy = term.getCursorPos()
+	local c, t, b
+	for iy = 1, #image[1] do
+		for ix = 1, #image[1][iy] do
+			c, t, b = image[1][iy]:sub(ix,ix), image[2][iy]:sub(ix,ix), image[3][iy]:sub(ix,ix)
+			if (b ~= " ") or (c ~= " ") then
+				term.setCursorPos(x+(ix-1),y+(iy-1))
+				term.blit(c, t, b)
+			end
+		end
+	end
+	term.setCursorPos(cx,cy)
+end
