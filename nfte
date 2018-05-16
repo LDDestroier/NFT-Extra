@@ -258,11 +258,20 @@ end
 merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	local images = {...}
 	local output = {{},{},{}}
-	local imageX, imageY = 0, 0
+	local imageX, imageY, adjX, adjY = 0, 0, 0, 0
 	for a = 1, #images do
 		if checkValid(images[a][1]) then
+			adjX = math.min(images[a][2]-1, adjX)
+			adjY = math.min(images[a][3]-1, adjY)
 			imageX = math.max(imageX, #images[a][1][1][1] + (images[a][2] - 1))
 			imageY = math.max(imageY, #images[a][1][1]    + (images[a][3] - 1))
+		end
+	end
+	imageX, imageY = imageX + adjX, imageY + adjY
+	if adjX + adjY ~= 0 then
+		for a = 1, #images do
+			images[a][2] = images[a][2] + adjX
+			images[a][3] = images[a][3] + adjY
 		end
 	end
 	for y = 1, imageY do
@@ -273,13 +282,13 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	local im,x,y
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
-		for oy = y, imy do
+		for oy = y, -1+imy+y do
 			output[1][oy] = stringWrite(output[1][oy], x, im[1][oy-(y-1)])
-			output[2][oy] = stringWrite(output[1][oy], x, im[2][oy-(y-1)])
-			output[3][oy] = stringWrite(output[1][oy], x, im[3][oy-(y-1)])
+			output[2][oy] = stringWrite(output[2][oy], x, im[2][oy-(y-1)])
+			output[3][oy] = stringWrite(output[3][oy], x, im[3][oy-(y-1)])
 		end
 	end
-	return output
+	return output, adjX, adjY
 end
 
 help = function(input)
