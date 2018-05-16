@@ -10,10 +10,20 @@ local deepCopy = function(tbl)
 	return output
 end
 
-local stringWrite = function(str, pos, ins)
+local function stringWrite(str,pos,ins,exc)
 	str, ins = tostring(str), tostring(ins)
-	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
+	local output, fn1, fn2 = str:sub(1,pos-1)..ins..str:sub(pos+#ins)
+	if exc then
+		repeat
+			fn1, fn2 = str:find(exc,fn2 and fn2+1 or 1)
+			if fn1 then
+				output = stringWrite(output,fn1,str:sub(fn1,fn2))
+			end
+		until not fn1
+	end
+	return output
 end
+
 
 local checkValid = function(image)
 	if type(image) == "table" then
@@ -283,9 +293,9 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
 		for oy = y, -1+imy+y do
-			output[1][oy] = stringWrite(output[1][oy], x, im[1][oy-(y-1)])
-			output[2][oy] = stringWrite(output[2][oy], x, im[2][oy-(y-1)])
-			output[3][oy] = stringWrite(output[3][oy], x, im[3][oy-(y-1)])
+			output[1][oy] = stringWrite(output[1][oy], x, im[1][oy-(y-1)]," ")
+			output[2][oy] = stringWrite(output[2][oy], x, im[2][oy-(y-1)]," ")
+			output[3][oy] = stringWrite(output[3][oy], x, im[3][oy-(y-1)]," ")
 		end
 	end
 	return output, adjX, adjY
