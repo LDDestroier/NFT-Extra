@@ -274,9 +274,9 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
 		for oy = y, imy do
-			output[1][oy] = stringWrite(output[1][oy], x, im[1][y-(oy-1)])
-			output[2][oy] = stringWrite(output[1][oy], x, im[2][y-(oy-1)])
-			output[3][oy] = stringWrite(output[1][oy], x, im[3][y-(oy-1)])
+			output[1][oy] = stringWrite(output[1][oy], x, im[1][oy-(y-1)])
+			output[2][oy] = stringWrite(output[1][oy], x, im[2][oy-(y-1)])
+			output[3][oy] = stringWrite(output[1][oy], x, im[3][oy-(y-1)])
 		end
 	end
 	return output
