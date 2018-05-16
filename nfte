@@ -14,6 +14,19 @@ local stringWrite = function(str, pos, ins)
 	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
 end
 
+local checkValid = function(image)
+	if type(image) == "table" then
+		if #image == 3 then
+			if #image[1] + #image[2] + #image[3] >= 3 then
+				if #image[1] == #image[2] and #image[2] == #image[3] then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
 loadImageData = function(image, background) --string image
 	image = image:lower()
 	local output = {{},{},{}} --char, text, back
@@ -55,6 +68,7 @@ loadImage = function(path, background)
 end
 
 unloadImage = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = ""
 	local text, back = " ", " "
 	local c, t, b
@@ -74,6 +88,7 @@ unloadImage = function(image)
 end
 
 drawImage = function(image, x, y)
+	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
 	for iy = 1, #image[1] do
 		term.setCursorPos(x,y+(iy-1))
@@ -83,6 +98,7 @@ drawImage = function(image, x, y)
 end
 
 drawImageTransparent = function(image, x, y)
+	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
 	local c, t, b
 	for iy = 1, #image[1] do
@@ -108,6 +124,7 @@ drawImageCenterTransparent = function(image, x, y)
 end
 
 flipX = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
 		output[1][y] = image[1][y]:reverse()
@@ -118,6 +135,7 @@ flipX = function(image)
 end
 
 flipY = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = #image[1], 1 do
 		output[1][#output[1]+1] = image[1][y]
@@ -128,6 +146,7 @@ flipY = function(image)
 end
 
 grayOut = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	local chart = {
 		["0"] = "0",
@@ -159,27 +178,29 @@ end
 
 greyOut = grayOut
 
+local ldchart = {
+	["0"] = "0",
+	["1"] = "4",
+	["2"] = "6",
+	["3"] = "0",
+	["4"] = "0",
+	["5"] = "0",
+	["6"] = "0",
+	["7"] = "8",
+	["8"] = "0",
+	["9"] = "3",
+	["a"] = "2",
+	["b"] = "9",
+	["c"] = "1",
+	["d"] = "5",
+	["e"] = "2",
+	["f"] = "7"
+}
+
 lighten = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
-	local chart = {
-		["0"] = "0",
-		["1"] = "4",
-		["2"] = "6",
-		["3"] = "0",
-		["4"] = "0",
-		["5"] = "0",
-		["6"] = "0",
-		["7"] = "8",
-		["8"] = "0",
-		["9"] = "3",
-		["a"] = "2",
-		["b"] = "9",
-		["c"] = "1",
-		["d"] = "5",
-		["e"] = "2",
-		["f"] = "7"
-	}
-	for k,v in pairs(chart) do
+	for k,v in pairs(ldchart) do
 		for y = 1, #image[1] do
 			output[1][y] = image[1][y]:gsub(k,v)
 			output[2][y] = image[2][y]:gsub(k,v)
@@ -190,26 +211,9 @@ lighten = function(image)
 end
 
 darken = function(image)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
-	local chart = {
-		["0"] = "0",
-		["1"] = "4",
-		["2"] = "6",
-		["3"] = "0",
-		["4"] = "0",
-		["5"] = "0",
-		["6"] = "0",
-		["7"] = "8",
-		["8"] = "0",
-		["9"] = "3",
-		["a"] = "2",
-		["b"] = "9",
-		["c"] = "1",
-		["d"] = "5",
-		["e"] = "2",
-		["f"] = "7"
-	}
-	for k,v in pairs(chart) do
+	for k,v in pairs(ldchart) do
 		for y = 1, #image[1] do
 			output[1][y] = image[1][y]:gsub(v,k)
 			output[2][y] = image[2][y]:gsub(v,k)
@@ -220,6 +224,7 @@ darken = function(image)
 end
 
 stretchImage = function(_image, sx, sy, noRepeat)
+	assert(checkValid(_image), "Invalid image.")
 	local output = {{},{},{}}
 	local image = deepCopy(_image)
 	if sx < 0 then image = flipX(image) end
@@ -244,6 +249,53 @@ stretchImage = function(_image, sx, sy, noRepeat)
 end
 
 pixelateImage = function(image,amntX, amntY)
+	assert(checkValid(image), "Invalid image.")
 	local imageX, imageY = #image[1][1], #image[1]
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
+end
+
+merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
+	local images = {...}
+	local output = {{},{},{}}
+	local imageX, imageY = 0, 0
+	for a = 1, #images do
+		if checkValid(images[a][1]) then
+			imageX = math.max(imageX, #images[a][1][1][1] + (images[a][1][2] - 1))
+			imageY = math.max(imageY, #images[a][1][1]    + (images[a][1][3] - 1))
+		end
+	end
+	for y = 1, imageY do
+		output[1][y] = (" "):rep(imageX)
+		output[2][y] = (" "):rep(imageX)
+		output[3][y] = (" "):rep(imageX)
+	end
+	local im,x,y
+	for a = #images, 1, -1 do
+		for oy = 1, imageY do
+			im,x,y = table.unpack(images[a])
+			output[1][oy] = stringWrite(output[1][y+oy], x, oy)
+			output[2][oy] = stringWrite(output[1][y+oy], x, oy)
+			output[3][oy] = stringWrite(output[1][y+oy], x, oy)
+		end
+	end
+	return output
+end
+
+help = function(input)
+	local helpOut = {
+		loadImageData = "Loads an NFT image from a string input.",
+		loadImage = "Loads an NFT image from a file path.",
+		drawImage = "Draws an image. Does not support transparency, sadly.",
+		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
+		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly."
+		drawImageCenterTransparent = "Draws an image centered around the inputted coordinates. Supports transparency, but not as fast as drawImageCenter.",
+		flipX = "Returns the inputted image, but with the X inverted.",
+		flipY = "Returns the inputted image, but with the Y inverted.",
+		grayOut = "Returns the inputted image, but with the colors converted into grayscale as best I could.",
+		lighten = "Returns the inputted image, but with the colors lightened.",
+		darken = "Returns the inputted image, but with the colors darkened.",
+		stretchImage = "Returns the inputted image, but it's been stretched to the inputted size.",
+		pixelateImage = "Returns the inputted image, but pixelated to a variable degree.",
+		merge = "Merges two or more images together.",
+	}
 end
