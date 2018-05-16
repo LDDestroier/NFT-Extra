@@ -11,6 +11,7 @@ local deepCopy = function(tbl)
 end
 
 local stringWrite = function(str, pos, ins)
+	str, ins = tostring(str), tostring(ins)
 	return str:sub(1,pos-1)..ins..str:sub(pos+#ins)
 end
 
@@ -260,8 +261,8 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	local imageX, imageY = 0, 0
 	for a = 1, #images do
 		if checkValid(images[a][1]) then
-			imageX = math.max(imageX, #images[a][1][1][1] + (images[a][1][2] - 1))
-			imageY = math.max(imageY, #images[a][1][1]    + (images[a][1][3] - 1))
+			imageX = math.max(imageX, #images[a][1][1][1] + (images[a][2] - 1))
+			imageY = math.max(imageY, #images[a][1][1]    + (images[a][3] - 1))
 		end
 	end
 	for y = 1, imageY do
@@ -273,9 +274,9 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	for a = #images, 1, -1 do
 		for oy = 1, imageY do
 			im,x,y = table.unpack(images[a])
-			output[1][oy] = stringWrite(output[1][y+oy], x, oy)
-			output[2][oy] = stringWrite(output[1][y+oy], x, oy)
-			output[3][oy] = stringWrite(output[1][y+oy], x, oy)
+			output[1][oy] = stringWrite(output[1][oy], x, im[1][-1+y+oy])
+			output[2][oy] = stringWrite(output[1][oy], x, im[2][-1+y+oy])
+			output[3][oy] = stringWrite(output[1][oy], x, im[3][-1+y+oy])
 		end
 	end
 	return output
@@ -287,7 +288,7 @@ help = function(input)
 		loadImage = "Loads an NFT image from a file path.",
 		drawImage = "Draws an image. Does not support transparency, sadly.",
 		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
-		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly."
+		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly.",
 		drawImageCenterTransparent = "Draws an image centered around the inputted coordinates. Supports transparency, but not as fast as drawImageCenter.",
 		flipX = "Returns the inputted image, but with the X inverted.",
 		flipY = "Returns the inputted image, but with the Y inverted.",
