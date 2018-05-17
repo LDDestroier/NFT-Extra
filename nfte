@@ -293,6 +293,9 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 			output[3][oy] = {}
 			if im[1][oy-(y-1)] then
 				for ox = 1, imageX do
+					output[1][oy][ox] = output[1][oy][ox] or " "
+					output[2][oy][ox] = output[2][oy][ox] or " "
+					output[3][oy][ox] = output[3][oy][ox] or " "
 					if im[1][oy-(y-1)]:sub(ox-(x-1)) ~= "" then
 						if not (output[1][oy][ox] and im[1][oy-(y-1)]:sub(ox-(x-1)) == " ") then
 							output[1][oy][ox] = im[1][oy-(y-1)]:sub(ox-(x-1))
