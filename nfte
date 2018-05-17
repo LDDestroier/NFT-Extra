@@ -296,17 +296,11 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 					output[1][oy][ox] = output[1][oy][ox] or " "
 					output[2][oy][ox] = output[2][oy][ox] or " "
 					output[3][oy][ox] = output[3][oy][ox] or " "
-					if im[1][oy-(y-1)]:sub(ox-(x-1)) ~= "" then
-						if not (output[1][oy][ox] and im[1][oy-(y-1)]:sub(ox-(x-1)) == " ") then
-							output[1][oy][ox] = im[1][oy-(y-1)]:sub(ox-(x-1))
-						end
-						if not (output[2][oy][ox] and im[2][oy-(y-1)]:sub(ox-(x-1)) == " ") then
-							output[2][oy][ox] = im[2][oy-(y-1)]:sub(ox-(x-1))
-						end
-						if not (output[3][oy][ox] and im[3][oy-(y-1)]:sub(ox-(x-1)) == " ") then
-							output[3][oy][ox] = im[3][oy-(y-1)]:sub(ox-(x-1))
-						end
-					else break end
+					if im[1][oy-(y-1)]:sub(ox-(x-1)):gsub(" ","") ~= "" then
+						output[1][oy][ox] = im[1][oy-(y-1)]:sub(ox-(x-1))
+						output[2][oy][ox] = im[2][oy-(y-1)]:sub(ox-(x-1))
+						output[3][oy][ox] = im[3][oy-(y-1)]:sub(ox-(x-1))
+					end
 				end
 			else break end
 		end
