@@ -267,7 +267,7 @@ end
 
 merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	local images = {...}
-	local output = {{},{},{}}
+	local output = {{{}},{{}},{{}}}
 	local imageX, imageY, adjX, adjY = 0, 0, 0, 0
 	for a = 1, #images do
 		if checkValid(images[a][1]) then
@@ -284,19 +284,27 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 			images[a][3] = images[a][3] + adjY
 		end
 	end
-	for y = 1, imageY do
-		output[1][y] = (" "):rep(imageX)
-		output[2][y] = (" "):rep(imageX)
-		output[3][y] = (" "):rep(imageX)
-	end
 	local im,x,y
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
-		for oy = y, -1+imy+y do
-			output[1][oy] = stringWrite(output[1][oy], x, im[1][oy-(y-1)]," ")
-			output[2][oy] = stringWrite(output[2][oy], x, im[2][oy-(y-1)]," ")
-			output[3][oy] = stringWrite(output[3][oy], x, im[3][oy-(y-1)]," ")
+		for oy = 1, imageY do
+			for ox = 1, imageX do
+				if not (output[1][oy][ox] and im[1][oy-(y-1)]:sub(ox-(x-1)] == " ") then
+					output[1][oy][ox] = im[1][oy-(y-1)]:sub(ox-(x-1)])
+				end
+				if not (output[2][oy][ox] and im[2][oy-(y-1)]:sub(ox-(x-1)] == " ") then
+					output[2][oy][ox] = im[2][oy-(y-1)]:sub(ox-(x-1)])
+				end
+				if not (output[3][oy][ox] and im[3][oy-(y-1)]:sub(ox-(x-1)] == " ") then
+					output[3][oy][ox] = im[3][oy-(y-1)]:sub(ox-(x-1)])
+				end
+			end
 		end
+	end
+	for a = 1, #output[1] do
+		output[1][a] = table.unpack(output[1][a])
+		output[2][a] = table.unpack(output[2][a])
+		output[3][a] = table.unpack(output[3][a])
 	end
 	return output, adjX, adjY
 end
