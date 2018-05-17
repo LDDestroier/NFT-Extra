@@ -288,6 +288,9 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
 		for oy = 1, imageY do
+			output[1][oy] = {}
+			output[2][oy] = {}
+			output[3][oy] = {}
 			if im[1][oy-(y-1)] then
 				for ox = 1, imageX do
 					if im[1][oy-(y-1)]:sub(ox-(x-1)) ~= "" then
