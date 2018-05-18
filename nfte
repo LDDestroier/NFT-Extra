@@ -284,7 +284,7 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 			images[a][3] = images[a][3] + adjY
 		end
 	end
-	local im,x,y
+	local im,x,y,new
 	for a = #images, 1, -1 do
 		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
 		for oy = 1, imageY do
@@ -293,22 +293,18 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 			output[3][oy] = {}
 			if im[1][oy-(y-1)] then
 				for ox = 1, imageX do
-					output[1][oy][ox] = output[1][oy][ox] or " "
-					output[2][oy][ox] = output[2][oy][ox] or " "
-					output[3][oy][ox] = output[3][oy][ox] or " "
-					if im[1][oy-(y-1)]:sub(ox-(x-1)):gsub(" ","") ~= "" then
-						output[1][oy][ox] = im[1][oy-(y-1)]:sub(ox-(x-1))
-						output[2][oy][ox] = im[2][oy-(y-1)]:sub(ox-(x-1))
-						output[3][oy][ox] = im[3][oy-(y-1)]:sub(ox-(x-1))
-					end
+					new = {im[1][oy-(y-1)]:sub(ox-(x-1)), im[2][oy-(y-1)]:sub(ox-(x-1)), im[3][oy-(y-1)]:sub(ox-(x-1))}
+					output[1][oy][ox] = new[1] or (output[1][oy][ox] and output[1][oy][ox] or " ")
+					output[2][oy][ox] = new[2] or (output[2][oy][ox] and output[2][oy][ox] or " ")
+					output[3][oy][ox] = new[3] or (output[3][oy][ox] and output[3][oy][ox] or " ")
 				end
 			else break end
 		end
 	end
 	for a = 1, #output[1] do
-		output[1][a] = table.unpack(output[1][a])
-		output[2][a] = table.unpack(output[2][a])
-		output[3][a] = table.unpack(output[3][a])
+		output[1][a] = table.concat(output[1][a])
+		output[2][a] = table.concat(output[2][a])
+		output[3][a] = table.concat(output[3][a])
 	end
 	return output, adjX, adjY
 end
