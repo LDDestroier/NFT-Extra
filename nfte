@@ -265,6 +265,7 @@ pixelateImage = function(image,amntX, amntY)
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
 end
 
+--[[ --does not work
 merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	local images = {...}
 	local output = {{{}},{{}},{{}}}
@@ -312,6 +313,7 @@ merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
 	end
 	return output, adjX, adjY
 end
+--]]
 
 help = function(input)
 	local helpOut = {
