@@ -52,8 +52,8 @@ crop = function(image, x1, y1, x2, y2)
 	local output = {{},{},{}}
 	for y = y1, y2 do
 		output[1][#output[1]+1] = image[1][y]:sub(x1,x2)
-		output[2][#output[1]+1] = image[2][y]:sub(x1,x2)
-		output[3][#output[1]+1] = image[3][y]:sub(x1,x2)
+		output[2][#output[2]+1] = image[2][y]:sub(x1,x2)
+		output[3][#output[3]+1] = image[3][y]:sub(x1,x2)
 	end
 	return output
 end
