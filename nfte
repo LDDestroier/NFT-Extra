@@ -263,19 +263,30 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	if sx < 0 then image = flipX(image) end
 	if sy < 0 then image = flipY(image) end
 	sx, sy = math.abs(sx), math.abs(sy)
-	local imageX, imageY = #image[1][1], #image[1]
+	local imageX, imageY = getSize(image)
 	local tx, ty
 	for y = 1, sy do
 		for x = 1, sx do
 			tx = math.ceil((x / sx) * imageX)
 			ty = math.ceil((y / sy) * imageY)
-			if noRepeat then
-				output[1][y] = (output[1][y] or "")..((tx == (x/sx)*imageX) and image[1][ty]:sub(tx,tx) or " ")
-			else
+			if not noRepeat then
 				output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
+			else
+				output[1][y] = (output[1][y] or "").." "
 			end
 			output[2][y] = (output[2][y] or "")..image[2][ty]:sub(tx,tx)
 			output[3][y] = (output[3][y] or "")..image[3][ty]:sub(tx,tx)
+		end
+	end
+	if noRepeat then
+		for y = 1, imageY do
+			for x = 1, imageX do
+				if image[1][y]:sub(x,x) ~= " " then
+					tx = math.ceil(((x / imageX) * sx) - ((0.5 / imageX) * sx))
+					ty = math.ceil(((y / imageY) * sy) - ((0.5 / imageY) * sx))
+					output[1][ty] = stringWrite(output[1][ty], tx, image[1][y]:sub(x,x))
+				end
+			end
 		end
 	end
 	return output
