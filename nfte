@@ -22,18 +22,64 @@ local function stringWrite(str,pos,ins,exc)
 	return output
 end
 
-
 local checkValid = function(image)
 	if type(image) == "table" then
 		if #image == 3 then
 			if #image[1] + #image[2] + #image[3] >= 3 then
-				if #image[1] == #image[2] and #image[2] == #image[3] then
-					return true
-				end
+				return (#image[1] == #image[2] and #image[2] == #image[3]) then
 			end
 		end
 	end
 	return false
+end
+ocal bl = {
+	[' '] = 0,
+	['0'] = 1,
+	['1'] = 2,
+	['2'] = 4,
+	['3'] = 8,
+	['4'] = 16,
+	['5'] = 32,
+	['6'] = 64,
+	['7'] = 128,
+	['8'] = 256,
+	['9'] = 512,
+	['a'] = 1024,
+	['b'] = 2048,
+	['c'] = 4096,
+	['d'] = 8192,
+	['e'] = 16384,
+	['f'] = 32768,
+}
+local lb = {}
+for k,v in pairs(bl) do
+	lb[v] = k
+end
+
+local ldchart = {	--it stands for light/dark chart
+	["0"] = "0",
+	["1"] = "4",
+	["2"] = "6",
+	["3"] = "0",
+	["4"] = "0",
+	["5"] = "0",
+	["6"] = "0",
+	["7"] = "8",
+	["8"] = "0",
+	["9"] = "3",
+	["a"] = "2",
+	["b"] = "9",
+	["c"] = "1",
+	["d"] = "5",
+	["e"] = "2",
+	["f"] = "7"
+}
+
+local getSizeNFP = function(image)
+	local xsize = 0
+	if type(image) ~= "table" then return 0,0 end
+	for y = 1, #image do xsize = math.max(xsize,#image[y]) end
+	return xsize, #image
 end
 
 getSize = function(image)
@@ -87,37 +133,6 @@ loadImageData = function(image, background) --string image
 		end
 	end
 	return output
-end
-
-local bl = {
-	[' '] = 0,
-	['0'] = 1,
-	['1'] = 2,
-	['2'] = 4,
-	['3'] = 8,
-	['4'] = 16,
-	['5'] = 32,
-	['6'] = 64,
-	['7'] = 128,
-	['8'] = 256,
-	['9'] = 512,
-	['a'] = 1024,
-	['b'] = 2048,
-	['c'] = 4096,
-	['d'] = 8192,
-	['e'] = 16384,
-	['f'] = 32768,
-}
-local lb = {}
-for k,v in pairs(bl) do
-	lb[v] = k
-end
-
-local getSizeNFP = function(image)
-	local xsize = 0
-	if type(image) ~= "table" then return 0,0 end
-	for y = 1, #image do xsize = math.max(xsize,#image[y]) end
-	return xsize, #image
 end
 
 convertFromNFP = function(image)
@@ -255,25 +270,6 @@ grayOut = function(image)
 end
 
 greyOut = grayOut
-
-local ldchart = {	--it stands for light/dark chart
-	["0"] = "0",
-	["1"] = "4",
-	["2"] = "6",
-	["3"] = "0",
-	["4"] = "0",
-	["5"] = "0",
-	["6"] = "0",
-	["7"] = "8",
-	["8"] = "0",
-	["9"] = "3",
-	["a"] = "2",
-	["b"] = "9",
-	["c"] = "1",
-	["d"] = "5",
-	["e"] = "2",
-	["f"] = "7"
-}
 
 lighten = function(image)
 	assert(checkValid(image), "Invalid image.")
