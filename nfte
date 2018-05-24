@@ -353,8 +353,9 @@ help = function(input)
 		grayOut = "Returns the inputted image, but with the colors converted into grayscale as best I could.",
 		lighten = "Returns the inputted image, but with the colors lightened.",
 		darken = "Returns the inputted image, but with the colors darkened.",
-		stretchImage = "Returns the inputted image, but it's been stretched to the inputted size.",
+		stretchImage = "Returns the inputted image, but it's been stretched to the inputted size. If the fourth argument is true, it will spread non-space characters evenly in the image.",
 		pixelateImage = "Returns the inputted image, but pixelated to a variable degree.",
 		merge = "Merges two or more images together.",
+		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
 	}
 end
