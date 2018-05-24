@@ -91,6 +91,67 @@ loadImageData = function(image, background) --string image
 	return output
 end
 
+local bl = {
+	['0'] = 1,
+	['1'] = 2,
+	['2'] = 4,
+	['3'] = 8,
+	['4'] = 16,
+	['5'] = 32,
+	['6'] = 64,
+	['7'] = 128,
+	['8'] = 256,
+	['9'] = 512,
+	['a'] = 1024,
+	['b'] = 2048,
+	['c'] = 4096,
+	['d'] = 8192,
+	['e'] = 16384,
+	['f'] = 32768,
+}
+local lb = {}
+for k,v in pairs(bl) do
+	lb[v] = k
+end
+
+local getSizeNFP = function(image)
+	local xsize = 0
+	if type(image) ~= "table" then return 0,0 end
+	for y = 1, #image do xsize = math.max(xsize,#image[y]) end
+	return xsize, #image
+end
+
+convertFromNFP = function(_image)
+	local output = {{},{},{}}
+	local image
+	if type(_image) == "string" then
+		image = {}
+		local x,y,i,char = 1,1,1
+		while true do
+			char = _image:sub(i,i)
+			if char == "\n" then
+				x, y = 1, y + 1
+			elseif char == "" then break else
+				image[y][x], x = bl[char], x + 1
+			end
+		end
+	else
+		image = {table.unpack(_image)}
+	end
+	local imageX, imageY = getSizeNFP(image)
+	for y = 1, imageY do
+		output[1][y] = ""
+		output[2][y] = ""
+		output[3][y] = ""
+		for x = 1, imageX do
+			output[1][y] = output[1][y]..lb[image[y][x]]
+			output[2][y] = output[2][y]..lb[image[y][x]]
+			output[3][y] = output[3][y]..lb[image[y][x]]
+		end
+	end
+	return output
+end
+
 loadImage = function(path, background)
 	local file = fs.open(path,"r")
 	local output = loadImageData(file.readAll(), background)
