@@ -148,7 +148,7 @@ end
 flipY = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
-	for y = #image[1], 1 do
+	for y = #image[1], 1, -1 do
 		output[1][#output[1]+1] = image[1][y]
 		output[2][#output[2]+1] = image[2][y]
 		output[3][#output[3]+1] = image[3][y]
