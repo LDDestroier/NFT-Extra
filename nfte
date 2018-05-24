@@ -92,6 +92,7 @@ loadImageData = function(image, background) --string image
 end
 
 local bl = {
+	[' '] = 0,
 	['0'] = 1,
 	['1'] = 2,
 	['2'] = 4,
@@ -129,9 +130,9 @@ convertFromNFP = function(image)
 		output[2][y] = ""
 		output[3][y] = ""
 		for x = 1, imageX do
-			output[1][y] = output[1][y]..lb[image[y][x]]
-			output[2][y] = output[2][y]..lb[image[y][x]]
-			output[3][y] = output[3][y]..lb[image[y][x]]
+			output[1][y] = output[1][y]..lb[image[y][x] or " "]
+			output[2][y] = output[2][y]..lb[image[y][x] or " "]
+			output[3][y] = output[3][y]..lb[image[y][x] or " "]
 		end
 	end
 	return output
@@ -390,6 +391,7 @@ help = function(input)
 	local helpOut = {
 		loadImageData = "Loads an NFT image from a string input.",
 		loadImage = "Loads an NFT image from a file path.",
+		convertFromNFP = "Loads a table NFP image into a table NFT image, same as what loadImage outputs.",
 		drawImage = "Draws an image. Does not support transparency, sadly.",
 		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
 		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly.",
