@@ -1,4 +1,4 @@
 # NFT-Extra
-An expansion of the NFT API, allowing for various transformations like merging, stretching, and rotating.
 
-Documentation soon to come.
+NFT Extra is a standalone expansion of the NFT API, made to ease the process of transforming NFT images.
+Stretch, merge, flip...
