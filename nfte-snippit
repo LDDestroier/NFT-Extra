@@ -1,7 +1,5 @@
 local tchar, bchar = string.char(31), string.char(30)
 
-local round = function(x) return x + 0.5 - (x + 0.5) % 1 end
-
 local deepCopy = function(tbl)
 	local output = {}
 	for k,v in pairs(tbl) do
