@@ -288,11 +288,14 @@ merge = function(...)
 			for i = 1, #images do
 				image, xadj, yadj = images[i][1], images[i][2], images[i][3]
 				tx, ty = x-(xadj-1), y-(yadj-1)
+				output[1][y][x] = " "
+				output[2][y][x] = " "
+				output[3][y][x] = " "
 				if image[1][ty] then
-					if images[1][ty]:sub(tx,tx) ~= "" then
-						output[1][y][x] = image[1][ty]:sub(tx,tx) == " " and output[1][y][x] or image[1][ty]:sub(tx,tx)
-						output[2][y][x] = image[2][ty]:sub(tx,tx) == " " and output[2][y][x] or image[2][ty]:sub(tx,tx)
-						output[3][y][x] = image[3][ty]:sub(tx,tx) == " " and output[3][y][x] or image[3][ty]:sub(tx,tx)
+					if image[1][ty]:sub(tx,tx) ~= "" then
+						output[1][y][x] = (image[1][ty]:sub(tx,tx) == " " and output[1][y][x] or image[1][ty]:sub(tx,tx))
+						output[2][y][x] = (image[2][ty]:sub(tx,tx) == " " and output[2][y][x] or image[2][ty]:sub(tx,tx))
+						output[3][y][x] = (image[3][ty]:sub(tx,tx) == " " and output[3][y][x] or image[3][ty]:sub(tx,tx))
 					end
 				end
 			end
