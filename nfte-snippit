@@ -38,7 +38,9 @@ local checkValid = function(image)
 	return false
 end
 
-getSize = function(image)
+nfte = {}
+
+nfte.getSize = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local x, y = 0, #image[1]
 	for y = 1, #image[1] do
@@ -47,7 +49,7 @@ getSize = function(image)
 	return x, y
 end
 
-crop = function(image, x1, y1, x2, y2)
+nfte.crop = function(image, x1, y1, x2, y2)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = y1, y2 do
@@ -58,7 +60,7 @@ crop = function(image, x1, y1, x2, y2)
 	return output
 end
 
-loadImageData = function(image, background) --string image
+nfte.loadImageData = function(image, background) --string image
 	image = image:lower()
 	local output = {{},{},{}} --char, text, back
 	local y = 1
@@ -122,7 +124,7 @@ local getSizeNFP = function(image)
 	return xsize, #image
 end
 
-convertFromNFP = function(image)
+nfte.convertFromNFP = function(image)
 	local output = {{},{},{}}
 	local imageX, imageY = getSizeNFP(image)
 	for y = 1, imageY do
@@ -138,14 +140,14 @@ convertFromNFP = function(image)
 	return output
 end
 
-loadImage = function(path, background)
+nfte.loadImage = function(path, background)
 	local file = fs.open(path,"r")
 	local output = loadImageData(file.readAll(), background)
 	file.close()
 	return output
 end
 
-unloadImage = function(image)
+nfte.unloadImage = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = ""
 	local text, back = " ", " "
@@ -165,7 +167,7 @@ unloadImage = function(image)
 	return output
 end
 
-drawImage = function(image, x, y)
+nfte.drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
 	for iy = 1, #image[1] do
@@ -175,7 +177,7 @@ drawImage = function(image, x, y)
 	term.setCursorPos(cx,cy)
 end
 
-drawImageTransparent = function(image, x, y)
+nfte.drawImageTransparent = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
 	local c, t, b
@@ -191,19 +193,19 @@ drawImageTransparent = function(image, x, y)
 	term.setCursorPos(cx,cy)
 end
 
-drawImageCenter = function(image, x, y)
+nfte.drawImageCenter = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImage(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
 
-drawImageCenterTransparent = function(image, x, y)
+nfte.drawImageCenterTransparent = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
 
-flipX = function(image)
+nfte.flipX = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
@@ -214,7 +216,7 @@ flipX = function(image)
 	return output
 end
 
-flipY = function(image)
+nfte.flipY = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = #image[1], 1, -1 do
@@ -225,7 +227,7 @@ flipY = function(image)
 	return output
 end
 
-grayOut = function(image)
+nfte.grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	local chart = {
@@ -256,9 +258,9 @@ grayOut = function(image)
 	return output
 end
 
-greyOut = grayOut
+nfte.greyOut = grayOut
 
-local ldchart = {
+local ldchart = {	--it stands for light/dark chart
 	["0"] = "0",
 	["1"] = "4",
 	["2"] = "6",
@@ -277,7 +279,7 @@ local ldchart = {
 	["f"] = "7"
 }
 
-lighten = function(image)
+nfte.lighten = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for k,v in pairs(ldchart) do
@@ -290,7 +292,7 @@ lighten = function(image)
 	return output
 end
 
-darken = function(image)
+nfte.darken = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for k,v in pairs(ldchart) do
@@ -303,7 +305,7 @@ darken = function(image)
 	return output
 end
 
-stretchImage = function(_image, sx, sy, noRepeat)
+nfte.stretchImage = function(_image, sx, sy, noRepeat)
 	assert(checkValid(_image), "Invalid image.")
 	local output = {{},{},{}}
 	local image = deepCopy(_image)
@@ -339,13 +341,13 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	return output
 end
 
-pixelateImage = function(image,amntX, amntY)
+nfte.pixelateImage = function(image,amntX, amntY)
 	assert(checkValid(image), "Invalid image.")
 	local imageX, imageY = getSize(image)
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
 end
 
-merge = function(...)
+nfte.merge = function(...)
 	local images = {...}
 	local output = {{},{},{}}
 	local imageX, imageY = 0, 0
@@ -387,7 +389,7 @@ merge = function(...)
 	return output
 end
 
-help = function(input)
+nfte.help = function(input)
 	local helpOut = {
 		loadImageData = "Loads an NFT image from a string input.",
 		loadImage = "Loads an NFT image from a file path.",
@@ -406,4 +408,5 @@ help = function(input)
 		merge = "Merges two or more images together.",
 		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
 	}
+	return helpOut[input] or "No such function."
 end
