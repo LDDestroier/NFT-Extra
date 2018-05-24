@@ -292,7 +292,7 @@ merge = function(...)
 				output[2][y][x] = output[2][y][x] or " "
 				output[3][y][x] = output[3][y][x] or " "
 				if image[1][ty] then
-					if (image[1][ty]:sub(tx,tx) ~= "") or (tx < 1) then
+					if (image[1][ty]:sub(tx,tx) ~= "") or (tx >= 1) then
 						output[1][y][x] = (image[1][ty]:sub(tx,tx) == " " and output[1][y][x] or image[1][ty]:sub(tx,tx))
 						output[2][y][x] = (image[2][ty]:sub(tx,tx) == " " and output[2][y][x] or image[2][ty]:sub(tx,tx))
 						output[3][y][x] = (image[3][ty]:sub(tx,tx) == " " and output[3][y][x] or image[3][ty]:sub(tx,tx))
