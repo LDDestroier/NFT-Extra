@@ -270,9 +270,9 @@ merge = function(...)
 	local output = {{},{},{}}
 	local imageX, imageY = 0, 0
 	for i = 1, #images do
-		imageY = math.max(imageY, #images[i][1][1])
+		imageY = math.max(imageY, #images[i][1][1]+(images[i][3]-1))
 		for y = 1, #images[i][1][1] do
-			imageX = math.max(imageX, #images[i][1][1][y])
+			imageX = math.max(imageX, #images[i][1][1][y]+(images[i][2]-1))
 		end
 	end
 	
