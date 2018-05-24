@@ -267,8 +267,8 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	local tx, ty
 	for y = 1, sy do
 		for x = 1, sx do
-			tx = round((x / sx) * imageX)
-			ty = round((y / sy) * imageY)
+			tx = math.ceil((x / sx) * imageX)
+			ty = math.ceil((y / sy) * imageY)
 			if noRepeat then
 				output[1][y] = (output[1][y] or "")..((tx == (x/sx)*imageX) and image[1][ty]:sub(tx,tx) or " ")
 			else
