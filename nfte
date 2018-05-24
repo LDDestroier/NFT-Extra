@@ -265,55 +265,44 @@ pixelateImage = function(image,amntX, amntY)
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
 end
 
---[[ --does not work
-merge = function(...) -- {{image,x,y}, {image,x,y}, ...}
+merge = function(...)
 	local images = {...}
-	local output = {{{}},{{}},{{}}}
-	local imageX, imageY, adjX, adjY = 0, 0, 0, 0
-	for a = 1, #images do
-		if checkValid(images[a][1]) then
-			adjX = math.min(images[a][2]-1, adjX)
-			adjY = math.min(images[a][3]-1, adjY)
-			imageX = math.max(imageX, #images[a][1][1][1] + (images[a][2] - 1))
-			imageY = math.max(imageY, #images[a][1][1]    + (images[a][3] - 1))
+	local output = {{},{},{}}
+	local imageX, imageY = 0, 0
+	for i = 1, #images do
+		imageY = math.max(imageY, #images[i][1][1])
+		for y = 1, #images[i][1][1] do
+			imageX = math.max(imageX, #images[i][1][1][y])
 		end
 	end
-	imageX, imageY = imageX + adjX, imageY + adjY
-	if adjX + adjY ~= 0 then
-		for a = 1, #images do
-			images[a][2] = images[a][2] + adjX
-			images[a][3] = images[a][3] + adjY
-		end
-	end
-	local im,x,y,new
-	for a = #images, 1, -1 do
-		im,x,y,imy = images[a][1], images[a][2], images[a][3], #images[a][1][1]
-		for oy = 1, imageY do
-			output[1][oy] = output[1][oy] or {}
-			output[2][oy] = output[2][oy] or {}
-			output[3][oy] = output[3][oy] or {}
-			if im[1][oy-(y-1)] then
-				for ox = 1, imageX do
-					new = {
-						im[1][oy-(y-1)]:sub(ox-(x-1),ox-(x-1)),
-						im[2][oy-(y-1)]:sub(ox-(x-1),ox-(x-1)),
-						im[3][oy-(y-1)]:sub(ox-(x-1),ox-(x-1))
-					}
-					output[1][oy][ox] = ((new[1] == " " or not new[1]) and (output[1][oy][ox] or " ") or new[1])
-					output[2][oy][ox] = ((new[2] == " " or not new[2]) and (output[2][oy][ox] or " ") or new[2])
-					output[3][oy][ox] = ((new[3] == " " or not new[3]) and (output[3][oy][ox] or " ") or new[3])
+	
+	--will later add code to adjust X/Y positions if negative values are given
+	
+	local image, xadj, yadj
+	local tx, ty
+	for y = 1, imageY do
+		output[1][y] = {}
+		output[2][y] = {}
+		output[3][y] = {}
+		for x = 1, imageX do
+			for i = 1, #images do
+				image, xadj, yadj = images[i][1], images[i][2], images[i][3]
+				tx, ty = x-(xadj-1), y-(yadj-1)
+				if image[1][ty] then
+					if images[1][ty]:sub(tx,tx) ~= "" then
+						output[1][y][x] = image[1][ty]:sub(tx,tx) == " " and output[1][y][x] or image[1][ty]:sub(tx,tx)
+						output[2][y][x] = image[2][ty]:sub(tx,tx) == " " and output[2][y][x] or image[2][ty]:sub(tx,tx)
+						output[3][y][x] = image[3][ty]:sub(tx,tx) == " " and output[3][y][x] or image[3][ty]:sub(tx,tx)
+					end
 				end
-			else break end
+			end
 		end
+		output[1][y] = table.concat(output[1][y])
+		output[2][y] = table.concat(output[2][y])
+		output[3][y] = table.concat(output[3][y])
 	end
-	for a = 1, #output[1] do
-		output[1][a] = table.concat(output[1][a])
-		output[2][a] = table.concat(output[2][a])
-		output[3][a] = table.concat(output[3][a])
-	end
-	return output, adjX, adjY
+	return output
 end
---]]
 
 help = function(input)
 	local helpOut = {
