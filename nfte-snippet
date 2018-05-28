@@ -59,7 +59,6 @@ nfte.crop = function(image, x1, y1, x2, y2)
 end
 
 nfte.loadImageData = function(image, background) --string image
-	image = image:lower()
 	local output = {{},{},{}} --char, text, back
 	local y = 1
 	local text, back = " ", background or " "
