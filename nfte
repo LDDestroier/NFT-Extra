@@ -32,7 +32,7 @@ local checkValid = function(image)
 	end
 	return false
 end
-ocal bl = {
+local bl = {
 	[' '] = 0,
 	['0'] = 1,
 	['1'] = 2,
