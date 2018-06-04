@@ -27,9 +27,7 @@ local checkValid = function(image)
 	if type(image) == "table" then
 		if #image == 3 then
 			if #image[1] + #image[2] + #image[3] >= 3 then
-				if #image[1] == #image[2] and #image[2] == #image[3] then
-					return true
-				end
+				return (#image[1] == #image[2] and #image[2] == #image[3])
 			end
 		end
 	end
