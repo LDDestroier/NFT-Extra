@@ -380,6 +380,46 @@ merge = function(...)
 	return output
 end
 
+rotateImage = function(image, angle)
+	local output = {{},{},{}}
+	local realOutput = {{},{},{}}
+	local tx, ty
+	local imageX, imageY = getSize(image)
+	local originX, originY = imageX / 2, imageY / 2
+	local adjX, adjY = 1, 1
+	for y = 1, #image[1] do
+		for x = 1, #image[1][y] do
+			if not (image[1][y]:sub(x,x) == " " and image[2][y]:sub(x,x) == " " and image[3][y]:sub(x,x) == " ") then
+				tx = math.floor( (x-originX) * math.cos(angle) - (originY-y) * math.sin(angle) )
+				ty = math.floor( (x-originX) * math.sin(angle) + (originY-y) * math.cos(angle) )
+				adjX, adjY = math.min(adjX, tx), math.min(adjY, ty)
+				output[1][ty] = output[1][ty] or {}
+				output[2][ty] = output[2][ty] or {}
+				output[3][ty] = output[3][ty] or {}
+				output[1][ty][tx] = image[1][y]:sub(x,x)
+				output[2][ty][tx] = image[2][y]:sub(x,x)
+				output[3][ty][tx] = image[3][y]:sub(x,x)
+			end
+		end
+	end
+	for y = adjY, #output[1] do
+		realOutput[1][y+1-adjY] = {}
+		realOutput[2][y+1-adjY] = {}
+		realOutput[3][y+1-adjY] = {}
+		for x = adjX, #output[1][y] do
+			realOutput[1][y+1-adjY][x+1-adjX] = output[1][y][x] or " "
+			realOutput[2][y+1-adjY][x+1-adjX] = output[2][y][x] or " "
+			realOutput[3][y+1-adjY][x+1-adjX] = output[3][y][x] or " "
+		end
+	end
+	for y = 1, #realOutput[1] do
+		realOutput[1][y] = table.concat(realOutput[1][y])
+		realOutput[2][y] = table.concat(realOutput[2][y])
+		realOutput[3][y] = table.concat(realOutput[3][y])
+	end
+	return realOutput, math.ceil(adjX-1+originX), math.ceil(adjY-1+originY)
+end
+
 help = function(input)
 	local helpOut = {
 		loadImageData = "Loads an NFT image from a string input.",
@@ -398,6 +438,7 @@ help = function(input)
 		pixelateImage = "Returns the inputted image, but pixelated to a variable degree.",
 		merge = "Merges two or more images together.",
 		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
+		rotateImage = "Rotates an image, and also returns how much the image center's X and Y had been adjusted."
 	}
 	return helpOut[input] or "No such function."
 end
