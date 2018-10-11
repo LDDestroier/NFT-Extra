@@ -180,9 +180,10 @@ end
 drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
+	local tx, bg = term.getTextColor(), term.getBackgroundColor()
 	for iy = 1, #image[1] do
 		term.setCursorPos(x,y+(iy-1))
-		term.blit(image[1][iy], image[2][iy], image[3][iy])
+		term.blit(image[1][iy], image[2][iy]:gsub(" ",lb[tx]), image[3][iy]:gsub(" ",lb[bg]))
 	end
 	term.setCursorPos(cx,cy)
 end
@@ -190,13 +191,14 @@ end
 drawImageTransparent = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	local cx, cy = term.getCursorPos()
+	local tx, bg = term.getTextColor(), term.getBackgroundColor()
 	local c, t, b
 	for iy = 1, #image[1] do
 		for ix = 1, #image[1][iy] do
 			c, t, b = image[1][iy]:sub(ix,ix), image[2][iy]:sub(ix,ix), image[3][iy]:sub(ix,ix)
 			if (b ~= " ") or (c ~= " ") then
 				term.setCursorPos(x+(ix-1),y+(iy-1))
-				term.blit(c, t, b)
+				term.blit(c, t:gsub(" ",lb[tx]), b:gsub(" ",lb[bg]))
 			end
 		end
 	end
