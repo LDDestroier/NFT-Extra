@@ -195,13 +195,13 @@ drawImage = function(image, x, y)
 end
 
 drawImageTransparent = function(image, x, y)
-	assert(checkValid(image), "Invalid image.")
+	assert(checkValid(image), "Invalid image. (" .. textutils.serialize(image) .. ")")
 	local cx, cy = term.getCursorPos()
 	local c, t, b
 	for iy = 1, #image[1] do
 		for ix = 1, #image[1][iy] do
 			c, t, b = image[1][iy]:sub(ix,ix), image[2][iy]:sub(ix,ix), image[3][iy]:sub(ix,ix)
-			if (b ~= " ") or (c ~= " ") then
+			if not (b == " " and c == " ") then
 				term.setCursorPos(x+(ix-1),y+(iy-1))
 				term.blit(c, t, b)
 			end
@@ -220,6 +220,16 @@ drawImageCenterTransparent = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
+end
+
+colorSwap = function(image, tbl)
+	local output = {{},{},{}}
+	for y = 1, #image[1] do
+		output[1][y] = image[1][y]
+		output[2][y] = image[2][y]:gsub(".", tbl)
+		output[3][y] = image[3][y]:gsub(".", tbl)
+	end
+	return output
 end
 
 local xflippable = {
@@ -480,7 +490,8 @@ help = function(input)
 		pixelateImage = "Returns the inputted image, but pixelated to a variable degree.",
 		merge = "Merges two or more images together.",
 		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
-		rotateImage = "Rotates an image, and also returns how much the image center's X and Y had been adjusted."
+		rotateImage = "Rotates an image, and also returns how much the image center's X and Y had been adjusted.",
+		colorSwap = "Swaps the colors of a given image with another color, according to an inputted table."
 	}
 	return helpOut[input] or "No such function."
 end
