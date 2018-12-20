@@ -4,10 +4,15 @@ local tchar = string.char(31)	-- for text colors
 local bchar = string.char(30)	-- for background colors
 local nchar = string.char(29)	-- for differentiating multiple frames in ANFT
 
-local deepCopy = function(tbl)
+local deepCopy
+deepCopy = function(tbl)
 	local output = {}
 	for k,v in pairs(tbl) do
-		output[k] = v
+		if type(v) == "table" then
+			output[k] = deepCopy(v)
+		else
+			output[k] = v
+		end
 	end
 	return output
 end
@@ -69,7 +74,7 @@ for k,v in pairs(bl) do
 	lb[v] = k
 end
 
-local ldchart = {	-- it stands for light/dark chart
+local ldchart, dlchart = {	-- it stands for light/dark chart
 	["0"] = "0",
 	["1"] = "4",
 	["2"] = "6",
@@ -86,7 +91,11 @@ local ldchart = {	-- it stands for light/dark chart
 	["d"] = "5",
 	["e"] = "2",
 	["f"] = "7"
-}
+}, {}
+
+for k,v in pairs(ldchart) do
+	dlchart[v] = k
+end
 
 local getSizeNFP = function(image)
 	local xsize = 0
@@ -408,31 +417,39 @@ greyOut = grayOut
 nfte.grayOut = grayOut
 nfte.greyOut = greyOut
 
-lighten = function(image)
+lighten = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
-	local output = {{},{},{}}
-	for k,v in pairs(ldchart) do
-		for y = 1, #image[1] do
-			output[1][y] = image[1][y]:gsub(k,v)
-			output[2][y] = image[2][y]:gsub(k,v)
-			output[3][y] = image[3][y]:gsub(k,v)
+	if amount < 0 then
+		return darken(image, -amount)
+	else
+		local output = deepCopy(image)
+		for i = 1, amount or 1 do
+			for y = 1, #output[1] do
+				output[1][y] = output[1][y]
+				output[2][y] = output[2][y]:gsub(".",ldchart)
+				output[3][y] = output[3][y]:gsub(".",ldchart)
+			end
 		end
+		return output
 	end
-	return output
 end
 nfte.lighten = lighten
 
-darken = function(image)
+darken = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
-	local output = {{},{},{}}
-	for k,v in pairs(ldchart) do
-		for y = 1, #image[1] do
-			output[1][y] = image[1][y]:gsub(v,k)
-			output[2][y] = image[2][y]:gsub(v,k)
-			output[3][y] = image[3][y]:gsub(v,k)
+	if amount < 0 then
+		return lighten(image, -amount)
+	else
+		local output = deepCopy(image)
+		for i = 1, amount or 1 do
+			for y = 1, #output[1] do
+				output[1][y] = output[1][y]
+				output[2][y] = output[2][y]:gsub(".",dlchart)
+				output[3][y] = output[3][y]:gsub(".",dlchart)
+			end
 		end
+		return output
 	end
-	return output
 end
 nfte.darken = darken
 
@@ -482,7 +499,7 @@ stretchImage = function(_image, sx, sy, noRepeat)
 end
 nfte.stretchImage = stretchImage
 
-pixelateImage = function(image,amntX, amntY)
+pixelateImage = function(image, amntX, amntY)
 	assert(checkValid(image), "Invalid image.")
 	local imageX, imageY = getSize(image)
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
