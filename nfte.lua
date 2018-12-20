@@ -564,47 +564,50 @@ merge = function(...)
 end
 nfte.merge = merge
 
-rotateImage = function(image, angle)
+rotateImage = function(image, angle, originX, originY)
 	local output = {{},{},{}}
 	local realOutput = {{},{},{}}
 	local tx, ty
 	local imageX, imageY = getSize(image)
-	local originX, originY = imageX / 2, imageY / 2
-	local minX, minY, maxX, maxY = 1, 1, 1, 1
-	for y = 1, #image[1] do
-		for x = 1, #image[1][y] do
-			if not (image[1][y]:sub(x,x) == " " and image[2][y]:sub(x,x) == " " and image[3][y]:sub(x,x) == " ") then
-				tx = math.floor( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) )
-				ty = math.floor( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) )
-				minX, minY = math.min(minX, tx), math.min(minY, ty)
-				maxX, maxY = math.max(maxX, tx), math.max(maxY, ty)
-				output[1][ty] = output[1][ty] or {}
-				output[2][ty] = output[2][ty] or {}
-				output[3][ty] = output[3][ty] or {}
-				output[1][ty][tx] = image[1][y]:sub(x,x)
-				output[2][ty][tx] = image[2][y]:sub(x,x)
-				output[3][ty][tx] = image[3][y]:sub(x,x)
+	local originX, originY = originX or math.floor(imageX / 2), originY or math.floor(imageY / 2)
+	local rotatePoint = function(x, y, angle, originX, originY)
+		return
+			math.floor( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) ) + originX,
+			math.floor( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) ) + originY
+	end
+	local corners = {
+		{rotatePoint(1, 		1, 		angle, originX, originY)},
+		{rotatePoint(imageX, 	1, 		angle, originX, originY)},
+		{rotatePoint(1, 		imageY, angle, originX, originY)},
+		{rotatePoint(imageX, 	imageY, angle, originX, originY)},
+	}
+	local minX = math.min(corners[1][1], corners[2][1], corners[3][1], corners[4][1])
+	local maxX = math.max(corners[1][1], corners[2][1], corners[3][1], corners[4][1])
+	local minY = math.min(corners[1][2], corners[2][2], corners[3][2], corners[4][2])
+	local maxY = math.max(corners[1][2], corners[2][2], corners[3][2], corners[4][2])
+
+	for y = 1, (maxY - minY) + 1 do
+		output[1][y] = {}
+		output[2][y] = {}
+		output[3][y] = {}
+		for x = 1, (maxX - minX) + 1 do
+			tx, ty = rotatePoint(x + minX, y + minY, -angle, originX, originY)
+			output[1][y][x] = " "
+			output[2][y][x] = " "
+			output[3][y][x] = " "
+			if image[1][ty] and tx > 0 then
+				output[1][y][x] = image[1][ty]:sub(tx,tx)
+				output[2][y][x] = image[2][ty]:sub(tx,tx)
+				output[3][y][x] = image[3][ty]:sub(tx,tx)
 			end
 		end
 	end
-	for y = minY, maxY do
-		realOutput[1][y+1-minY] = {}
-		realOutput[2][y+1-minY] = {}
-		realOutput[3][y+1-minY] = {}
-		for x = minX, maxX do
-			if output[1][y] then
-				realOutput[1][y+1-minY][x+1-minX] = output[1][y][x] or " "
-				realOutput[2][y+1-minY][x+1-minX] = output[2][y][x] or " "
-				realOutput[3][y+1-minY][x+1-minX] = output[3][y][x] or " "
-			end
-		end
+	for y = 1, #output[1] do
+		output[1][y] = table.concat(output[1][y])
+		output[2][y] = table.concat(output[2][y])
+		output[3][y] = table.concat(output[3][y])
 	end
-	for y = 1, #realOutput[1] do
-		realOutput[1][y] = table.concat(realOutput[1][y])
-		realOutput[2][y] = table.concat(realOutput[2][y])
-		realOutput[3][y] = table.concat(realOutput[3][y])
-	end
-	return realOutput, math.ceil(minX-1+originX), math.ceil(minY-1+originY)
+	return output, math.ceil(minX), math.ceil(minY)
 end
 nfte.rotateImage = rotateImage
 
