@@ -1,7 +1,8 @@
 local nfte = {}
 
-local tchar = string.char(31)
-local bchar = string.char(30)
+local tchar = string.char(31)	-- for text colors
+local bchar = string.char(30)	-- for background colors
+local nchar = string.char(29)	-- for differentiating multiple frames in ANFT
 
 local deepCopy = function(tbl)
 	local output = {}
@@ -35,7 +36,16 @@ local checkValid = function(image)
 	end
 	return false
 end
-local bl = {
+
+local checkIfANFT = function(image)
+	if type(image) == "table" then
+		return type(image[1][1]) == "table"
+	elseif type(image) == "string" then
+		return image:find(nchar) and true or false
+	end
+end
+
+local bl = {	-- blit
 	[' '] = 0,
 	['0'] = 1,
 	['1'] = 2,
@@ -54,7 +64,7 @@ local bl = {
 	['e'] = 16384,
 	['f'] = 32768,
 }
-local lb = {}
+local lb = {} 	-- tilb
 for k,v in pairs(bl) do
 	lb[v] = k
 end
@@ -107,7 +117,7 @@ crop = function(image, x1, y1, x2, y2)
 end
 nfte.crop = crop
 
-loadImageData = function(image, background) -- string image
+local loadImageDataNFT = function(image, background) -- string image
 	local output = {{},{},{}} -- char, text, back
 	local y = 1
 	local text, back = " ", background or " "
@@ -128,7 +138,7 @@ loadImageData = function(image, background) -- string image
 				back = c2
 				doSkip = true
 			elseif c1 == "\n" then
-				maxX = math.max(maxX, #output[1][y] + 1)
+				maxX = math.max(maxX, #output[1][y])
 				y = y + 1
 				text, back = " ", background or " "
 			else
@@ -145,9 +155,27 @@ loadImageData = function(image, background) -- string image
 	end
 	return output
 end
+
+loadImageData = function(image, background)
+	assert(type(image) == "string", "NFT image data must be string.")
+	local output = {}
+	if checkIfANFT(image) then
+		local L, R = 1, 1
+		while L do
+			R = (image:find(nchar, L + 1) or 0)
+			output[#output+1] = loadImageDataNFT(image:sub(L, R - 1), background)
+			L = image:find(nchar, R + 1)
+			if L then L = L + 2 end
+		end
+		return output, "anft"
+	else
+		return loadImageDataNFT(image, background), "nft"
+	end
+end
 nfte.loadImageData = loadImageData
 
 convertFromNFP = function(image)
+	assert(type(image) == "string", "NFP image data must be string.")
 	local output = {{},{},{}}
 	local imageX, imageY = getSizeNFP(image)
 	for y = 1, imageY do
@@ -165,14 +193,16 @@ end
 nfte.convertFromNFP = convertFromNFP
 
 loadImage = function(path, background)
+	assert(fs.exists(path), "No such file exists.")
+	assert(not fs.isDir(path), "Cannot load directory.")
 	local file = fs.open(path,"r")
-	local output = loadImageData(file.readAll(), background)
+	local output, format = loadImageData(file.readAll(), background)
 	file.close()
-	return output
+	return output, format
 end
 nfte.loadImage = loadImage
 
-unloadImage = function(image)
+local unloadImageNFT = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = ""
 	local text, back = " ", " "
@@ -180,8 +210,14 @@ unloadImage = function(image)
 	for y = 1, #image[1] do
 		for x = 1, #image[1][y] do
 			c, t, b = image[1][y]:sub(x,x), image[2][y]:sub(x,x), image[3][y]:sub(x,x)
-			if (t ~= text) or (x + y == 2) then output = output..tchar..t end
-			if (b ~= back) or (x + y == 2) then output = output..bchar..b end
+			if (t ~= text) or (x == 1) then
+				output = output..tchar..t
+				text = t
+			end
+			if (b ~= back) or (x == 1) then
+				output = output..bchar..b
+				back = b
+			end
 			output = output..c
 		end
 		if y ~= #image[1] then
@@ -191,10 +227,27 @@ unloadImage = function(image)
 	end
 	return output
 end
+unloadImage = function(image)
+	assert(checkValid(image), "Invalid image.")
+	local output = ""
+	if checkIfANFT(image) then
+		for i = 1, #image do
+			output = output .. unloadImageNFT(image[i])
+			if i ~= #image then
+				output = output .. nchar .. "\n"
+			end
+		end
+	else
+		output = unloadImageNFT(image)
+	end
+	return output
+end
 nfte.unloadImage = unloadImage
 
 drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
+	assert(type(x) ~= "number", "x value must be number, got " .. type(x))
+	assert(type(y) ~= "number", "y value must be number, got " .. type(y))
 	local cx, cy = term.getCursorPos()
 	for iy = 1, #image[1] do
 		term.setCursorPos(x,y+(iy-1))
@@ -205,7 +258,9 @@ end
 nfte.drawImage = drawImage
 
 drawImageTransparent = function(image, x, y)
-	assert(checkValid(image), "Invalid image. (" .. textutils.serialize(image) .. ")")
+	assert(checkValid(image), "Invalid image.")
+	assert(type(x) ~= "number", "x value must be number, got " .. type(x))
+	assert(type(y) ~= "number", "y value must be number, got " .. type(y))
 	local cx, cy = term.getCursorPos()
 	local c, t, b
 	for iy = 1, #image[1] do
@@ -236,6 +291,7 @@ end
 nfte.drawImageCenterTransparent = drawImageCenterTransparent
 
 colorSwap = function(image, tbl)
+	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
 		output[1][y] = image[1][y]
@@ -248,7 +304,6 @@ nfte.colorSwap = colorSwap
 
 local xflippable = {
 	["\129"] = "\130",
-	["\131"] = "\131",
 	["\132"] = "\136",
 	["\133"] = "\138",
 	["\134"] = "\137",
@@ -421,9 +476,9 @@ merge = function(...)
 			imageX = math.max(imageX, #images[i][1][1][y]+(images[i][2]-1))
 		end
 	end
-	
+
 	-- will later add code to adjust X/Y positions if negative values are given
-	
+
 	local image, xadj, yadj
 	local tx, ty
 	for y = 1, imageY do
@@ -504,8 +559,8 @@ help = function(input)
 		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
 		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly.",
 		drawImageCenterTransparent = "Draws an image centered around the inputted coordinates. Supports transparency, but not as fast as drawImageCenter.",
-		flipX = "Returns the inputted image, but with the X inverted.",
-		flipY = "Returns the inputted image, but with the Y inverted.",
+		flipX = "Returns the inputted image, but flipped horizontally.",
+		flipY = "Returns the inputted image, but flipped vertically.",
 		grayOut = "Returns the inputted image, but with the colors converted into grayscale as best I could.",
 		lighten = "Returns the inputted image, but with the colors lightened.",
 		darken = "Returns the inputted image, but with the colors darkened.",
