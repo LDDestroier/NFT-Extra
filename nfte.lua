@@ -394,12 +394,10 @@ grayOut = function(image)
 		["e"] = "7",
 		["f"] = "f"
 	}
-	for k,v in pairs(chart) do
-		for y = 1, #image[1] do
-			output[1][y] = image[1][y]:gsub(k,v)
-			output[2][y] = image[2][y]:gsub(k,v)
-			output[3][y] = image[3][y]:gsub(k,v)
-		end
+	for y = 1, #image[1] do
+		output[1][y] = image[1][y]
+		output[2][y] = image[2][y]:gsub(".", chart)
+		output[3][y] = image[3][y]:gsub(".", chart)
 	end
 	return output
 end
