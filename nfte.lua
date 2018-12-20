@@ -246,8 +246,8 @@ nfte.unloadImage = unloadImage
 
 drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
-	assert(type(x) ~= "number", "x value must be number, got " .. type(x))
-	assert(type(y) ~= "number", "y value must be number, got " .. type(y))
+	assert(type(x) == "number", "x value must be number, got " .. type(x))
+	assert(type(y) == "number", "y value must be number, got " .. type(y))
 	local cx, cy = term.getCursorPos()
 	for iy = 1, #image[1] do
 		term.setCursorPos(x,y+(iy-1))
@@ -259,8 +259,8 @@ nfte.drawImage = drawImage
 
 drawImageTransparent = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
-	assert(type(x) ~= "number", "x value must be number, got " .. type(x))
-	assert(type(y) ~= "number", "y value must be number, got " .. type(y))
+	assert(type(x) == "number", "x value must be number, got " .. type(x))
+	assert(type(y) == "number", "y value must be number, got " .. type(y))
 	local cx, cy = term.getCursorPos()
 	local c, t, b
 	for iy = 1, #image[1] do
@@ -360,7 +360,7 @@ flipY = function(image)
 end
 nfte.flipY = flipY
 
-makeRectangle = function(width, height, char, text, back)
+rectangle = function(width, height, char, text, back)
 	assert(type(width) == "number", "width must be number")
 	assert(type(height) == "number", "height must be number")
 	local output = {{},{},{}}
@@ -371,7 +371,7 @@ makeRectangle = function(width, height, char, text, back)
 	end
 	return output
 end
-nfte.makeRectangle = makeRectangle
+nfte.rectangle = rectangle
 
 grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
