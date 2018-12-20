@@ -360,6 +360,19 @@ flipY = function(image)
 end
 nfte.flipY = flipY
 
+makeRectangle = function(width, height, char, text, back)
+	assert(type(width) == "number", "width must be number")
+	assert(type(height) == "number", "height must be number")
+	local output = {{},{},{}}
+	for y = 1, height do
+		output[1][y] = (char or " "):rep(width)
+		output[2][y] = (text or " "):rep(width)
+		output[3][y] = (back or " "):rep(width)
+	end
+	return output
+end
+nfte.makeRectangle = makeRectangle
+
 grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
