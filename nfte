@@ -1,4 +1,7 @@
-local tchar, bchar = string.char(31), string.char(30)
+local nfte = {}
+
+local tchar = string.char(31)
+local bchar = string.char(30)
 
 local deepCopy = function(tbl)
 	local output = {}
@@ -56,7 +59,7 @@ for k,v in pairs(bl) do
 	lb[v] = k
 end
 
-local ldchart = {	--it stands for light/dark chart
+local ldchart = {	-- it stands for light/dark chart
 	["0"] = "0",
 	["1"] = "4",
 	["2"] = "6",
@@ -90,6 +93,7 @@ getSize = function(image)
 	end
 	return x, y
 end
+nfte.getSize = getSize
 
 crop = function(image, x1, y1, x2, y2)
 	assert(checkValid(image), "Invalid image.")
@@ -101,9 +105,10 @@ crop = function(image, x1, y1, x2, y2)
 	end
 	return output
 end
+nfte.crop = crop
 
-loadImageData = function(image, background) --string image
-	local output = {{},{},{}} --char, text, back
+loadImageData = function(image, background) -- string image
+	local output = {{},{},{}} -- char, text, back
 	local y = 1
 	local text, back = " ", background or " "
 	local doSkip, c1, c2 = false
@@ -140,6 +145,7 @@ loadImageData = function(image, background) --string image
 	end
 	return output
 end
+nfte.loadImageData = loadImageData
 
 convertFromNFP = function(image)
 	local output = {{},{},{}}
@@ -156,6 +162,7 @@ convertFromNFP = function(image)
 	end
 	return output
 end
+nfte.convertFromNFP = convertFromNFP
 
 loadImage = function(path, background)
 	local file = fs.open(path,"r")
@@ -163,6 +170,7 @@ loadImage = function(path, background)
 	file.close()
 	return output
 end
+nfte.loadImage = loadImage
 
 unloadImage = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -183,6 +191,7 @@ unloadImage = function(image)
 	end
 	return output
 end
+nfte.unloadImage = unloadImage
 
 drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
@@ -193,6 +202,7 @@ drawImage = function(image, x, y)
 	end
 	term.setCursorPos(cx,cy)
 end
+nfte.drawImage = drawImage
 
 drawImageTransparent = function(image, x, y)
 	assert(checkValid(image), "Invalid image. (" .. textutils.serialize(image) .. ")")
@@ -209,18 +219,21 @@ drawImageTransparent = function(image, x, y)
 	end
 	term.setCursorPos(cx,cy)
 end
+nfte.drawImageTransparent = drawImageTransparent
 
 drawImageCenter = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImage(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
+nfte.drawImageCenter = drawImageCenter
 
 drawImageCenterTransparent = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
+nfte.drawImageCenterTransparent = drawImageCenterTransparent
 
 colorSwap = function(image, tbl)
 	local output = {{},{},{}}
@@ -231,6 +244,7 @@ colorSwap = function(image, tbl)
 	end
 	return output
 end
+nfte.colorSwap = colorSwap
 
 local xflippable = {
 	["\129"] = "\130",
@@ -277,6 +291,7 @@ flipX = function(image)
 	end
 	return output
 end
+nfte.flipX = flipX
 
 flipY = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -288,6 +303,7 @@ flipY = function(image)
 	end
 	return output
 end
+nfte.flipY = flipY
 
 grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -319,8 +335,9 @@ grayOut = function(image)
 	end
 	return output
 end
-
 greyOut = grayOut
+nfte.grayOut = grayOut
+nfte.greyOut = greyOut
 
 lighten = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -334,6 +351,7 @@ lighten = function(image)
 	end
 	return output
 end
+nfte.lighten = lighten
 
 darken = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -347,6 +365,7 @@ darken = function(image)
 	end
 	return output
 end
+nfte.darken = darken
 
 stretchImage = function(_image, sx, sy, noRepeat)
 	assert(checkValid(_image), "Invalid image.")
@@ -383,12 +402,14 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	end
 	return output
 end
+nfte.stretchImage = stretchImage
 
 pixelateImage = function(image,amntX, amntY)
 	assert(checkValid(image), "Invalid image.")
 	local imageX, imageY = getSize(image)
 	return stretchImage(stretchImage(image,imageX/math.max(amntX,1), imageY/math.max(amntY,1)), imageX, imageY)
 end
+nfte.pixelateImage = pixelateImage
 
 merge = function(...)
 	local images = {...}
@@ -401,7 +422,7 @@ merge = function(...)
 		end
 	end
 	
-	--will later add code to adjust X/Y positions if negative values are given
+	-- will later add code to adjust X/Y positions if negative values are given
 	
 	local image, xadj, yadj
 	local tx, ty
@@ -431,6 +452,7 @@ merge = function(...)
 	end
 	return output
 end
+nfte.merge = merge
 
 rotateImage = function(image, angle)
 	local output = {{},{},{}}
@@ -471,6 +493,7 @@ rotateImage = function(image, angle)
 	end
 	return realOutput, math.ceil(adjX-1+originX), math.ceil(adjY-1+originY)
 end
+nfte.rotateImage = rotateImage
 
 help = function(input)
 	local helpOut = {
@@ -495,3 +518,6 @@ help = function(input)
 	}
 	return helpOut[input] or "No such function."
 end
+nfte.help = help
+
+return nfte
