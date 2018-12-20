@@ -74,7 +74,7 @@ for k,v in pairs(bl) do
 	lb[v] = k
 end
 
-local ldchart, dlchart = {	-- it stands for light/dark chart
+local ldchart = {	-- it stands for light/dark chart
 	["0"] = "0",
 	["1"] = "4",
 	["2"] = "6",
@@ -91,11 +91,26 @@ local ldchart, dlchart = {	-- it stands for light/dark chart
 	["d"] = "5",
 	["e"] = "2",
 	["f"] = "7"
-}, {}
+}
 
-for k,v in pairs(ldchart) do
-	dlchart[v] = k
-end
+local dlchart = {	-- it stands for dark/light chart
+	["0"] = "8",
+	["1"] = "c",
+	["2"] = "a",
+	["3"] = "9",
+	["4"] = "1",
+	["5"] = "d",
+	["6"] = "2",
+	["7"] = "f",
+	["8"] = "7",
+	["9"] = "b",
+	["a"] = "7",
+	["b"] = "7",
+	["c"] = "7",
+	["d"] = "7",
+	["e"] = "7",
+	["f"] = "f"
+}
 
 local getSizeNFP = function(image)
 	local xsize = 0
@@ -419,7 +434,7 @@ nfte.greyOut = greyOut
 
 lighten = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
-	if amount < 0 then
+	if (amount or 1) < 0 then
 		return darken(image, -amount)
 	else
 		local output = deepCopy(image)
@@ -437,7 +452,7 @@ nfte.lighten = lighten
 
 darken = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
-	if amount < 0 then
+	if (amount or 1) < 0 then
 		return lighten(image, -amount)
 	else
 		local output = deepCopy(image)
