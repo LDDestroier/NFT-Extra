@@ -360,7 +360,7 @@ flipY = function(image)
 end
 nfte.flipY = flipY
 
-rectangle = function(width, height, char, text, back)
+makeRectangle = function(width, height, char, text, back)
 	assert(type(width) == "number", "width must be number")
 	assert(type(height) == "number", "height must be number")
 	local output = {{},{},{}}
@@ -371,7 +371,7 @@ rectangle = function(width, height, char, text, back)
 	end
 	return output
 end
-nfte.rectangle = rectangle
+nfte.makeRectangle = makeRectangle
 
 grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
@@ -444,31 +444,40 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	sx, sy = math.abs(sx), math.abs(sy)
 	local imageX, imageY = getSize(image)
 	local tx, ty
-	for y = 1, sy do
-		for x = 1, sx do
-			tx = math.ceil((x / sx) * imageX)
-			ty = math.ceil((y / sy) * imageY)
-			if not noRepeat then
-				output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
-			else
-				output[1][y] = (output[1][y] or "").." "
-			end
-			output[2][y] = (output[2][y] or "")..image[2][ty]:sub(tx,tx)
-			output[3][y] = (output[3][y] or "")..image[3][ty]:sub(tx,tx)
+	if sx == 0 or sy == 0 then
+		for y = 1, math.max(sy, 1) do
+			output[1][y] = ""
+			output[2][y] = ""
+			output[3][y] = ""
 		end
-	end
-	if noRepeat then
-		for y = 1, imageY do
-			for x = 1, imageX do
-				if image[1][y]:sub(x,x) ~= " " then
-					tx = math.ceil(((x / imageX) * sx) - ((0.5 / imageX) * sx))
-					ty = math.ceil(((y / imageY) * sy) - ((0.5 / imageY) * sx))
-					output[1][ty] = stringWrite(output[1][ty], tx, image[1][y]:sub(x,x))
+		return output
+	else
+		for y = 1, sy do
+			for x = 1, sx do
+				tx = math.ceil((x / sx) * imageX)
+				ty = math.ceil((y / sy) * imageY)
+				if not noRepeat then
+					output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
+				else
+					output[1][y] = (output[1][y] or "").." "
+				end
+				output[2][y] = (output[2][y] or "")..image[2][ty]:sub(tx,tx)
+				output[3][y] = (output[3][y] or "")..image[3][ty]:sub(tx,tx)
+			end
+		end
+		if noRepeat then
+			for y = 1, imageY do
+				for x = 1, imageX do
+					if image[1][y]:sub(x,x) ~= " " then
+						tx = math.ceil(((x / imageX) * sx) - ((0.5 / imageX) * sx))
+						ty = math.ceil(((y / imageY) * sy) - ((0.5 / imageY) * sx))
+						output[1][ty] = stringWrite(output[1][ty], tx, image[1][y]:sub(x,x))
+					end
 				end
 			end
 		end
+		return output
 	end
-	return output
 end
 nfte.stretchImage = stretchImage
 
@@ -528,13 +537,14 @@ rotateImage = function(image, angle)
 	local tx, ty
 	local imageX, imageY = getSize(image)
 	local originX, originY = imageX / 2, imageY / 2
-	local adjX, adjY = 1, 1
+	local minX, minY, maxX, maxY = 1, 1, 1, 1
 	for y = 1, #image[1] do
 		for x = 1, #image[1][y] do
 			if not (image[1][y]:sub(x,x) == " " and image[2][y]:sub(x,x) == " " and image[3][y]:sub(x,x) == " ") then
-				tx = math.floor( (x-originX) * math.cos(angle) - (originY-y) * math.sin(angle) )
-				ty = math.floor( (x-originX) * math.sin(angle) + (originY-y) * math.cos(angle) )
-				adjX, adjY = math.min(adjX, tx), math.min(adjY, ty)
+				tx = math.floor( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) )
+				ty = math.floor( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) )
+				minX, minY = math.min(minX, tx), math.min(minY, ty)
+				maxX, maxY = math.max(maxX, tx), math.max(maxY, ty)
 				output[1][ty] = output[1][ty] or {}
 				output[2][ty] = output[2][ty] or {}
 				output[3][ty] = output[3][ty] or {}
@@ -544,14 +554,16 @@ rotateImage = function(image, angle)
 			end
 		end
 	end
-	for y = adjY, #output[1] do
-		realOutput[1][y+1-adjY] = {}
-		realOutput[2][y+1-adjY] = {}
-		realOutput[3][y+1-adjY] = {}
-		for x = adjX, #output[1][y] do
-			realOutput[1][y+1-adjY][x+1-adjX] = output[1][y][x] or " "
-			realOutput[2][y+1-adjY][x+1-adjX] = output[2][y][x] or " "
-			realOutput[3][y+1-adjY][x+1-adjX] = output[3][y][x] or " "
+	for y = minY, maxY do
+		realOutput[1][y+1-minY] = {}
+		realOutput[2][y+1-minY] = {}
+		realOutput[3][y+1-minY] = {}
+		for x = minX, maxX do
+			if output[1][y] then
+				realOutput[1][y+1-minY][x+1-minX] = output[1][y][x] or " "
+				realOutput[2][y+1-minY][x+1-minX] = output[2][y][x] or " "
+				realOutput[3][y+1-minY][x+1-minX] = output[3][y][x] or " "
+			end
 		end
 	end
 	for y = 1, #realOutput[1] do
@@ -559,7 +571,7 @@ rotateImage = function(image, angle)
 		realOutput[2][y] = table.concat(realOutput[2][y])
 		realOutput[3][y] = table.concat(realOutput[3][y])
 	end
-	return realOutput, math.ceil(adjX-1+originX), math.ceil(adjY-1+originY)
+	return realOutput, math.ceil(minX-1+originX), math.ceil(minY-1+originY)
 end
 nfte.rotateImage = rotateImage
 
