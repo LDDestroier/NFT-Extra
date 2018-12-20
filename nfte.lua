@@ -335,9 +335,12 @@ flipX = function(image)
 		output[2][y] = ""
 		output[3][y] = ""
 		for x = 1, #image[1][y] do
-			if (not xflippable[image[1][y]:sub(x,x)]) or xinvertable[image[1][y]:sub(x,x)] then
+			if xinvertable[image[1][y]:sub(x,x)] then
 				output[2][y] = image[3][y]:sub(x,x) .. output[2][y]
 				output[3][y] = image[2][y]:sub(x,x) .. output[3][y]
+			elseif xflippable[image[1][y]:sub(x,x)] then
+				output[2][y] = xflippable[image[2][y]:sub(x,x)] .. output[2][y]
+				output[3][y] = xflippable[image[3][y]:sub(x,x)] .. output[3][y]
 			else
 				output[2][y] = image[2][y]:sub(x,x) .. output[2][y]
 				output[3][y] = image[3][y]:sub(x,x) .. output[3][y]
