@@ -1,18 +1,16 @@
 local nftePath = "/nfte"
-local nfte
-if fs.exists(nftePath) then
-	nfte = dofile("nfte")
-else
-	local haych = http.get("http://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte.lua")
+if not fs.exists(nftePath) then
+	local haych = http.get("https://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte.lua")
 	if haych then
 		local file = fs.open(nftePath, "w")
 		file.write(haych.readAll())
 		file.close()
-		nfte = dofile("nfte")
 	else
 		error("Can't download NFTE! How can I work as a good demo now!?")
 	end
 end
+
+nfte = dofile("nfte")
 
 local scr_x, scr_y = term.getSize()
 local mx, my = scr_x / 2, scr_y / 2
