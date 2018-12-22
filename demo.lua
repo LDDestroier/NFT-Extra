@@ -3,7 +3,7 @@ local nfte
 if fs.exists(nftePath) then
 	nfte = dofile("nfte")
 else
-	local haych = http.get("https://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte")
+	local haych = http.get("http://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte.lua")
 	if haych then
 		local file = fs.open(nftePath, "w")
 		file.write(haych.readAll())
