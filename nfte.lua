@@ -217,12 +217,14 @@ end
 nfte.convertFromNFP = convertFromNFP
 
 loadImage = function(path, background)
-	assert(fs.exists(path), "No such file exists.")
-	assert(not fs.isDir(path), "Cannot load directory.")
-	local file = fs.open(path,"r")
-	local output, format = loadImageData(file.readAll(), background)
-	file.close()
-	return output, format
+	local file = io.open(path, "r")
+	if file then
+		local output, format = loadImageData(file.readAll(), background)
+		file.close()
+		return output, format
+	else
+		error("No such file exists, or is directory.")
+	end
 end
 nfte.loadImage = loadImage
 
@@ -305,26 +307,32 @@ drawImageCenter = function(image, x, y)
 	local imageX, imageY = getSize(image)
 	return drawImage(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
+drawImageCentre = drawImageCenter
 nfte.drawImageCenter = drawImageCenter
+nfte.drawImageCentre = drawImageCenter
 
 drawImageCenterTransparent = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
 end
+drawImageCentreTransparent = drawImageCenterTransparent
 nfte.drawImageCenterTransparent = drawImageCenterTransparent
+nfte.drawImageCentreTransparent = drawImageCenterTransparent
 
-colorSwap = function(image, tbl)
+colorSwap = function(image, text, back)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
 		output[1][y] = image[1][y]
-		output[2][y] = image[2][y]:gsub(".", tbl)
-		output[3][y] = image[3][y]:gsub(".", tbl)
+		output[2][y] = image[2][y]:gsub(".", text or {})
+		output[3][y] = image[3][y]:gsub(".", back or {})
 	end
 	return output
 end
+colourSwap = colorSwap
 nfte.colorSwap = colorSwap
+nfte.colourSwap = colorSwap
 
 local xflippable = {
 	["\129"] = "\130",
@@ -430,7 +438,7 @@ grayOut = function(image)
 end
 greyOut = grayOut
 nfte.grayOut = grayOut
-nfte.greyOut = greyOut
+nfte.greyOut = grayOut
 
 lighten = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
@@ -618,11 +626,14 @@ help = function(input)
 		convertFromNFP = "Loads a table NFP image into a table NFT image, same as what loadImage outputs.",
 		drawImage = "Draws an image. Does not support transparency, sadly.",
 		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
-		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency, sadly.",
-		drawImageCenterTransparent = "Draws an image centered around the inputted coordinates. Supports transparency, but not as fast as drawImageCenter.",
+		drawImageCenter = "Draws an image centered around the inputted coordinates. Does not support transparency.",
+		drawImageCentre = "Draws an image centred around the inputted coordinates. Does not support transparency.",
+		drawImageCenterTransparent = "Draws an image centered around the inputted coordinates. Supports transparency, but not quite as fast as drawImageCenter.",
+		drawImageCentreTransparent = "Draws an image centred around the inputted coordinates. Supports transparency, but not quite as fast as drawImageCentre.",
 		flipX = "Returns the inputted image, but flipped horizontally.",
 		flipY = "Returns the inputted image, but flipped vertically.",
 		grayOut = "Returns the inputted image, but with the colors converted into grayscale as best I could.",
+		greyOut = "Returns the inputted image, but with the colors converted into greyscale as best I could.",
 		lighten = "Returns the inputted image, but with the colors lightened.",
 		darken = "Returns the inputted image, but with the colors darkened.",
 		stretchImage = "Returns the inputted image, but it's been stretched to the inputted size. If the fourth argument is true, it will spread non-space characters evenly in the image.",
@@ -630,7 +641,8 @@ help = function(input)
 		merge = "Merges two or more images together.",
 		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
 		rotateImage = "Rotates an image, and also returns how much the image center's X and Y had been adjusted.",
-		colorSwap = "Swaps the colors of a given image with another color, according to an inputted table."
+		colorSwap = "Swaps the colors of a given image with another color, according to an inputted table.",
+		colourSwap = "Swaps the colours of a given image with another colour, according to an inputted table."
 	}
 	return helpOut[input] or "No such function."
 end
