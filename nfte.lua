@@ -219,7 +219,8 @@ nfte.convertFromNFP = convertFromNFP
 loadImage = function(path, background)
 	local file = io.open(path, "r")
 	if file then
-		local output, format = loadImageData(file.readAll(), background)
+		io.input(file)
+		local output, format = loadImageData(io.read("*all"), background)
 		file.close()
 		return output, format
 	else
@@ -325,8 +326,8 @@ colorSwap = function(image, text, back)
 	local output = {{},{},{}}
 	for y = 1, #image[1] do
 		output[1][y] = image[1][y]
-		output[2][y] = image[2][y]:gsub(".", text or {})
-		output[3][y] = image[3][y]:gsub(".", back or {})
+		output[2][y] = image[2][y]:gsub(".", text)
+		output[3][y] = image[3][y]:gsub(".", back or text)
 	end
 	return output
 end
