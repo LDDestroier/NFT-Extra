@@ -1,8 +1,8 @@
 # NFT-Extra
 
-NFT Extra is a standalone expansion of the NFT API, made to ease the process of transforming NFT images.
+NFT Extra is a standalone expansion and general API for the NFT image format, made to ease the process of transforming and drawing NFT images.
 
-Stretch, merge, flip, rotate, and more.
+Stretch, merge, flip, rotate, and more. Can be loaded in a regular Lua 5.2 terminal as well.
 
 ## Documentation
 
@@ -27,15 +27,20 @@ imageContents = nfte.unloadImage( imageData )
 ```
 Unloads the image data into a string format that can then be written to disk.
 
-### Image inspection
 
+### Image inspection
 ```
 x, y = nfte.getSize( imageData )
 ```
 Returns the width and height of an image.
 
-### Image manipulation
+```
+print( nfte.help( functionName ) )
+```
+Returns a basic description of one of the functions.
 
+
+### Image manipulation
 ```
 croppedImage = nfte.crop( imageData, x1, y1, x2, y2 )
 ```
@@ -57,6 +62,7 @@ textConvert = {
 }
 ```
 Using that would replace every text color 7 with 5, every 8 with a, every 9 with 3, et cetera.
+You British wankers can also call nfte.colourSwap().
 
 ```
 flippedImage = nfte.flipX( imageData )
@@ -92,4 +98,48 @@ darkerImage = nfte.darken( imageData, amount )
 Returns the image, but with all the colors darkened 'amount' times.
 This doesn't alter the palette, again.
 
-(finish later)
+```
+stretchedImage = nfte.stretchImage( imageData, newWidth, newHeight, doNotRepeatChar )
+```
+Scales the image to (newWidth, newHeight).
+If doNotRepeatChar is true, it will not repeat characters within the image, which would make images with text in them read like "hhheeellllllooo   wwwooorrrlllddd" instead of " h  e  l  l  o     w  o  r  l  d ".
+
+```
+pixelyImage = nfte.pixelateImage( imageData, amountX, amountY )
+```
+Basically, scales the image down by (amountX, amountY), then back up. Results in a pixelated image.
+
+```
+mergedImage = nfte.merge( {imageData1, x1, y1}, {imageData2, x2, y2}, ... )
+```
+Merges multiple images at different (x, y) positions into one big image. imageData1 will layer over imageData2, 2 over 3, et cetera.
+This function is useful for reducing flickering, as you can simply merge all other images together and render it all at once.
+
+```
+rotatedImage = nfte.rotateImage( imageData, angles, originX, originY )
+```
+Rotates the image around (originX, originY) by 'angles' degrees. The origin defaults to the center of the image.
+
+
+### Image drawing
+```
+nfte.drawImage( imageData, x, y )
+```
+Draws an image at (x, y). All transparency is set to black.
+
+```
+nfte.drawImageTransparent(image, x, y)
+```
+Draws an image at (x, y), but with transparency. As such, it's not quite as speedy as the former.
+
+```
+nfte.drawImageCenter( image, x, y )
+```
+Draws an image centered around (x, y). All transparency is set to black.
+You British peasants can call nfte.drawImageCentre().
+
+```
+nfte.drawImageCenterTransparent( image, x, y )
+```
+Draws an image centered around (x, y). And it's also got transparency, hey. Again, it's not quite as speedy as the former.
+Those formerly of the EU can call nfte.drawImageCentreTransparent().
