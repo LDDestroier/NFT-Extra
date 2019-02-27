@@ -221,7 +221,7 @@ loadImage = function(path, background)
 	if file then
 		io.input(file)
 		local output, format = loadImageData(io.read("*all"), background)
-		file.close()
+		io.close()
 		return output, format
 	else
 		error("No such file exists, or is directory.")
