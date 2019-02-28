@@ -1,4 +1,4 @@
-local nftePath = "/nfte"
+local nftePath = "/nfte.lua"
 if not fs.exists(nftePath) then
 	local haych = http.get("https://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte.lua")
 	if haych then
