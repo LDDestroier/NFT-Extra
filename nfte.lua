@@ -38,9 +38,7 @@ end
 local checkValid = function(image)
 	if type(image) == "table" then
 		if #image == 3 then
---			if #image[1] + #image[2] + #image[3] >= 3 then
-				return (#image[1] == #image[2] and #image[2] == #image[3])
---			end
+			return (#image[1] == #image[2] and #image[2] == #image[3])
 		end
 	end
 	return false
@@ -78,7 +76,7 @@ for k,v in pairs(bl) do
 	lb[v] = k
 end
 
-local ldchart = {	-- it stands for light/dark chart
+local ldchart = {	-- converts colors into a lighter shade
 	["0"] = "0",
 	["1"] = "4",
 	["2"] = "6",
@@ -97,7 +95,7 @@ local ldchart = {	-- it stands for light/dark chart
 	["f"] = "7"
 }
 
-local dlchart = {	-- it stands for dark/light chart
+local dlchart = {	-- converts colors into a darker shade
 	["0"] = "8",
 	["1"] = "c",
 	["2"] = "a",
@@ -119,10 +117,11 @@ local dlchart = {	-- it stands for dark/light chart
 local getSizeNFP = function(image)
 	local xsize = 0
 	if type(image) ~= "table" then return 0,0 end
-	for y = 1, #image do xsize = math.max(xsize,#image[y]) end
+	for y = 1, #image do xsize = math.max(xsize, #image[y]) end
 	return xsize, #image
 end
 
+-- returns (x, y) size of a loaded NFT image
 getSize = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local x, y = 0, #image[1]
@@ -133,6 +132,7 @@ getSize = function(image)
 end
 nfte.getSize = getSize
 
+-- cuts off the sides of an image
 crop = function(image, x1, y1, x2, y2)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
@@ -148,9 +148,11 @@ nfte.crop = crop
 local loadImageDataNFT = function(image, background) -- string image
 	local output = {{},{},{}} -- char, text, back
 	local y = 1
-	local text, back = " ", background or " "
+	background = (background or " "):sub(1,1)
+	local text, back = " ", background
 	local doSkip, c1, c2 = false
 	local maxX = 0
+	local bx
 	for i = 1, #image do
 		if doSkip then
 			doSkip = false
@@ -168,7 +170,7 @@ local loadImageDataNFT = function(image, background) -- string image
 			elseif c1 == "\n" then
 				maxX = math.max(maxX, #output[1][y])
 				y = y + 1
-				text, back = " ", background or " "
+				text, back = " ", background
 			else
 				output[1][y] = output[1][y]..c1
 				output[2][y] = output[2][y]..text
@@ -179,14 +181,55 @@ local loadImageDataNFT = function(image, background) -- string image
 	for y = 1, #output[1] do
 		output[1][y] = output[1][y] .. (" "):rep(maxX - #output[1][y])
 		output[2][y] = output[2][y] .. (" "):rep(maxX - #output[2][y])
-		output[3][y] = output[3][y] .. (" "):rep(maxX - #output[3][y])
+		output[3][y] = output[3][y] .. (background):rep(maxX - #output[3][y])
 	end
 	return output
 end
 
+local loadImageDataNFP = function(image, background)
+	local output = {}
+	local x, y = 1, 1
+	for i = 1, #image do
+		output[y] = output[y] or {}
+		if bl[image:sub(i,i)] then
+			output[y][x] = bl[image:sub(i,i)]
+			x = x + 1
+		elseif image:sub(i,i) == "\n" then
+			x, y = 1, y + 1
+		end
+	end
+	return output
+end
+
+-- takes a loaded image and returns a loaded NFT image
+convertFromNFP = function(image, background)
+	background = background or " "
+	local output = {{},{},{}}
+	if type(image) == "string" then
+		image = loadImageDataNFP(image)
+	end
+	local imageX, imageY = getSizeNFP(image)
+	local bx
+	for y = 1, imageY do
+		output[1][y] = ""
+		output[2][y] = ""
+		output[3][y] = ""
+		for x = 1, imageX do
+			bx = (x % #background) + 1
+			output[1][y] = output[1][y]..lb[image[y][x] or background:sub(bx,bx)]
+			output[2][y] = output[2][y]..lb[image[y][x] or background:sub(bx,bx)]
+			output[3][y] = output[3][y]..lb[image[y][x] or background:sub(bx,bx)]
+		end
+	end
+	return output
+end
+nfte.convertFromNFP = convertFromNFP
+
+-- loads the raw string NFT image data
 loadImageData = function(image, background)
 	assert(type(image) == "string", "NFT image data must be string.")
 	local output = {}
+	-- images can be ANFT, which means they have multiple layers
 	if checkIfANFT(image) then
 		local L, R = 1, 1
 		while L do
@@ -196,30 +239,15 @@ loadImageData = function(image, background)
 			if L then L = L + 2 end
 		end
 		return output, "anft"
-	else
+	elseif image:find(tchar) and image:find(bchar) then
 		return loadImageDataNFT(image, background), "nft"
+	else
+		return convertFromNFP(image), "nfp"
 	end
 end
 nfte.loadImageData = loadImageData
 
-convertFromNFP = function(image)
-	assert(type(image) == "string", "NFP image data must be string.")
-	local output = {{},{},{}}
-	local imageX, imageY = getSizeNFP(image)
-	for y = 1, imageY do
-		output[1][y] = ""
-		output[2][y] = ""
-		output[3][y] = ""
-		for x = 1, imageX do
-			output[1][y] = output[1][y]..lb[image[y][x] or " "]
-			output[2][y] = output[2][y]..lb[image[y][x] or " "]
-			output[3][y] = output[3][y]..lb[image[y][x] or " "]
-		end
-	end
-	return output
-end
-nfte.convertFromNFP = convertFromNFP
-
+-- loads an image file. will convert from NFP if necessary
 loadImage = function(path, background)
 	local file = io.open(path, "r")
 	if file then
@@ -258,6 +286,8 @@ local unloadImageNFT = function(image)
 	end
 	return output
 end
+
+-- takes a loaded NFT image and converts it back into regular NFT (or ANFT)
 unloadImage = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = ""
@@ -275,19 +305,21 @@ unloadImage = function(image)
 end
 nfte.unloadImage = unloadImage
 
+-- draws an image with the topleft corner at (x, y)
 drawImage = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	assert(type(x) == "number", "x value must be number, got " .. type(x))
 	assert(type(y) == "number", "y value must be number, got " .. type(y))
 	local cx, cy = term.getCursorPos()
 	for iy = 1, #image[1] do
-		term.setCursorPos(x,y+(iy-1))
+		term.setCursorPos(x, y + (iy - 1))
 		term.blit(image[1][iy], image[2][iy], image[3][iy])
 	end
 	term.setCursorPos(cx,cy)
 end
 nfte.drawImage = drawImage
 
+-- draws an image with the topleft corner at (x, y), with transparency
 drawImageTransparent = function(image, x, y)
 	assert(checkValid(image), "Invalid image.")
 	assert(type(x) == "number", "x value must be number, got " .. type(x))
@@ -298,7 +330,7 @@ drawImageTransparent = function(image, x, y)
 		for ix = 1, #image[1][iy] do
 			c, t, b = image[1][iy]:sub(ix,ix), image[2][iy]:sub(ix,ix), image[3][iy]:sub(ix,ix)
 			if not (b == " " and c == " ") then
-				term.setCursorPos(x+(ix-1),y+(iy-1))
+				term.setCursorPos(x + (ix - 1), y + (iy - 1))
 				term.blit(c, t, b)
 			end
 		end
@@ -307,24 +339,35 @@ drawImageTransparent = function(image, x, y)
 end
 nfte.drawImageTransparent = drawImageTransparent
 
+-- draws an image centered at (x, y) or center screen
 drawImageCenter = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
-	return drawImage(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
+	return drawImage(
+		image,
+		round(1 + (x and x or (scr_x/2)) - imageX/2),
+		round(1 + (y and y or (scr_y/2)) - imageY/2)
+	)
 end
 drawImageCentre = drawImageCenter
 nfte.drawImageCenter = drawImageCenter
 nfte.drawImageCentre = drawImageCenter
 
+-- draws an image centered at (x, y) or center screen, with transparency
 drawImageCenterTransparent = function(image, x, y)
 	local scr_x, scr_y = term.getSize()
 	local imageX, imageY = getSize(image)
-	return drawImageTransparent(image, (x and x or (scr_x/2)) - (imageX/2), (y and y or (scr_y/2)) - (imageY/2))
+	return drawImageTransparent(
+		image,
+		round(1 + (x and x or (scr_x/2)) - imageX/2),
+		round(1 + (y and y or (scr_y/2)) - imageY/2)
+	)
 end
 drawImageCentreTransparent = drawImageCenterTransparent
 nfte.drawImageCenterTransparent = drawImageCenterTransparent
 nfte.drawImageCentreTransparent = drawImageCenterTransparent
 
+-- swaps every color in an image with a different one according to a table
 colorSwap = function(image, text, back)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
@@ -339,6 +382,7 @@ colourSwap = colorSwap
 nfte.colorSwap = colorSwap
 nfte.colourSwap = colorSwap
 
+-- every flippable block character that doesn't needa  color swap
 local xflippable = {
 	["\129"] = "\130",
 	["\132"] = "\136",
@@ -349,6 +393,7 @@ local xflippable = {
 	["\141"] = "\142",
 	["\143"] = "\143",
 }
+-- every flippable block character that needs a color swap
 local xinvertable = {
 	["\144"] = "\159",
 	["\145"] = "\157",
@@ -364,6 +409,7 @@ for k,v in pairs(xinvertable) do
 	xinvertable[v] = k
 end
 
+-- flips an image horizontally, flipping all necessary block characters
 flipX = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
@@ -388,6 +434,7 @@ flipX = function(image)
 end
 nfte.flipX = flipX
 
+-- flips an image vertically. doesn't touch block characters
 flipY = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
@@ -400,6 +447,7 @@ flipY = function(image)
 end
 nfte.flipY = flipY
 
+-- makes a rectangular image of (width, height) and char/text/back.
 makeRectangle = function(width, height, char, text, back)
 	assert(type(width) == "number", "width must be number")
 	assert(type(height) == "number", "height must be number")
@@ -413,6 +461,7 @@ makeRectangle = function(width, height, char, text, back)
 end
 nfte.makeRectangle = makeRectangle
 
+-- converts an image into grayscale as best I could
 grayOut = function(image)
 	assert(checkValid(image), "Invalid image.")
 	local output = {{},{},{}}
@@ -445,6 +494,7 @@ greyOut = grayOut
 nfte.grayOut = grayOut
 nfte.greyOut = grayOut
 
+-- takes an image and lightens it by a certain amount
 lighten = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
 	if (amount or 1) < 0 then
@@ -463,6 +513,7 @@ lighten = function(image, amount)
 end
 nfte.lighten = lighten
 
+-- takes an image and darkens it by a certain amount
 darken = function(image, amount)
 	assert(checkValid(image), "Invalid image.")
 	if (amount or 1) < 0 then
@@ -481,6 +532,9 @@ darken = function(image, amount)
 end
 nfte.darken = darken
 
+-- stretches an image so that its new height and width are (sx, sy).
+-- if noRepeat, it will only draw one of each character for each pixel
+--  in the original image, so as to not mess up text in images.
 stretchImage = function(_image, sx, sy, noRepeat)
 	assert(checkValid(_image), "Invalid image.")
 	local output = {{},{},{}}
@@ -527,6 +581,21 @@ stretchImage = function(_image, sx, sy, noRepeat)
 end
 nfte.stretchImage = stretchImage
 
+-- same as stretchImage, but will not alter its aspect ratio
+stretchImageKeepAspect = function(image, sx, sy, noRepeat)
+	assert(checkValid(image), "Invalid image.")
+	local imX, imY = nfte.getSize(image)
+	local aspect = sx / sy
+	local imAspect = imX / imY
+	if imAspect > aspect then
+		return nfte.stretchImage(image, sx, sx / imAspect)
+	else
+		return nfte.stretchImage(image, sy, sy / imAspect)
+	end
+end
+nfte.stretchImageKeepAspect = stretchImageKeepAspect
+
+-- will stretch and unstretch an image to radically lower its resolution
 pixelateImage = function(image, amntX, amntY)
 	assert(checkValid(image), "Invalid image.")
 	local imageX, imageY = getSize(image)
@@ -534,6 +603,8 @@ pixelateImage = function(image, amntX, amntY)
 end
 nfte.pixelateImage = pixelateImage
 
+-- merges two or more images together at arbitrary positions
+-- earlier arguments will be layered on top of later ones
 merge = function(...)
 	local images = {...}
 	local output = {{},{},{}}
@@ -554,7 +625,7 @@ merge = function(...)
 		output[2][y] = {}
 		output[3][y] = {}
 		for x = 1, imageX do
-			for i = 1, #images do
+			for i = #images, 1, -1 do
 				image, xadj, yadj = images[i][1], images[i][2], images[i][3]
 				tx, ty = x-(xadj-1), y-(yadj-1)
 				output[1][y][x] = output[1][y][x] or " "
@@ -577,6 +648,7 @@ merge = function(...)
 end
 nfte.merge = merge
 
+-- rotates an image around (originX, originY) or its center, by angle radians
 rotateImage = function(image, angle, originX, originY)
 	local output = {{},{},{}}
 	local realOutput = {{},{},{}}
@@ -629,10 +701,11 @@ rotateImage = function(image, angle, originX, originY)
 end
 nfte.rotateImage = rotateImage
 
+-- returns help info for each function
 help = function(input)
 	local helpOut = {
-		loadImageData = "Loads an NFT image from a string input.",
-		loadImage = "Loads an NFT image from a file path.",
+		loadImageData = "Loads an NFT, ANFT, or NFP image from a string input.",
+		loadImage = "Loads an NFT, ANFT, or NFP image from a file path.",
 		convertFromNFP = "Loads a table NFP image into a table NFT image, same as what loadImage outputs.",
 		drawImage = "Draws an image. Does not support transparency, sadly.",
 		drawImageTransparent = "Draws an image. Supports transparency, but not as fast as drawImage.",
@@ -647,14 +720,19 @@ help = function(input)
 		lighten = "Returns the inputted image, but with the colors lightened.",
 		darken = "Returns the inputted image, but with the colors darkened.",
 		stretchImage = "Returns the inputted image, but it's been stretched to the inputted size. If the fourth argument is true, it will spread non-space characters evenly in the image.",
+		stretchImageKeepAspect = "Returns the inputted image, but it's been stretched to fit a box of the inputted size. Won't alter its aspect ratio. If the fourth argument is true, it will spread non-space characters evenly in the image.",
 		pixelateImage = "Returns the inputted image, but pixelated to a variable degree.",
 		merge = "Merges two or more images together.",
-		crop = "Crops an image between points (X1,Y1) and (X2,Y2).",
+		crop = "Crops an image between points (X1, Y1) and (X2, Y2).",
 		rotateImage = "Rotates an image, and also returns how much the image center's X and Y had been adjusted.",
 		colorSwap = "Swaps the colors of a given image with another color, according to an inputted table.",
-		colourSwap = "Swaps the colours of a given image with another colour, according to an inputted table."
+		colourSwap = "Swaps the colours of a given image with another colour, according to an inputted table for either/both text and background."
 	}
-	return helpOut[input] or "No such function."
+	if nfte[input] then
+		return helpOut[input] or "That function doesn't have a help text...? That's not right."
+	else
+		return helpOut[input] or "No such function."
+	end 
 end
 nfte.help = help
 
