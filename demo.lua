@@ -100,7 +100,7 @@ local demo = function()
 		sleep(0.05)
 	end
 	sleep(0.1)
-	for i = 0, 360, 2 do
+	for i = 0, 360, 3 do
 		image = nfte.rotateImage( origImage, math.rad(i) )
 		sleep(0.05)
 	end
