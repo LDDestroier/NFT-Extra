@@ -349,7 +349,8 @@ drawImageCenter = function(image, x, y, terminal)
 	return drawImage(
 		image,
 		round(1 + (x and x or (scr_x/2)) - imageX/2),
-		round(1 + (y and y or (scr_y/2)) - imageY/2)
+		round(1 + (y and y or (scr_y/2)) - imageY/2),
+		terminal
 	)
 end
 drawImageCentre = drawImageCenter
@@ -364,7 +365,8 @@ drawImageCenterTransparent = function(image, x, y, terminal)
 	return drawImageTransparent(
 		image,
 		round(1 + (x and x or (scr_x/2)) - imageX/2),
-		round(1 + (y and y or (scr_y/2)) - imageY/2)
+		round(1 + (y and y or (scr_y/2)) - imageY/2),
+		terminal
 	)
 end
 drawImageCentreTransparent = drawImageCenterTransparent
