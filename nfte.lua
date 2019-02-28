@@ -38,9 +38,9 @@ end
 local checkValid = function(image)
 	if type(image) == "table" then
 		if #image == 3 then
-			if #image[1] + #image[2] + #image[3] >= 3 then
+--			if #image[1] + #image[2] + #image[3] >= 3 then
 				return (#image[1] == #image[2] and #image[2] == #image[3])
-			end
+--			end
 		end
 	end
 	return false
@@ -582,6 +582,9 @@ rotateImage = function(image, angle, originX, originY)
 	local realOutput = {{},{},{}}
 	local tx, ty
 	local imageX, imageY = getSize(image)
+	if imageX == 0 or imageY == 0 then
+		return image
+	end
 	local originX, originY = originX or math.floor(imageX / 2), originY or math.floor(imageY / 2)
 	local rotatePoint = function(x, y, angle, originX, originY)
 		return
