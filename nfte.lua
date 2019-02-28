@@ -590,7 +590,7 @@ stretchImageKeepAspect = function(image, sx, sy, noRepeat)
 	if imAspect > aspect then
 		return nfte.stretchImage(image, sx, sx / imAspect)
 	else
-		return nfte.stretchImage(image, sy, sy / imAspect)
+		return nfte.stretchImage(image, sy * imAspect, sy)
 	end
 end
 nfte.stretchImageKeepAspect = stretchImageKeepAspect
@@ -609,10 +609,27 @@ merge = function(...)
 	local images = {...}
 	local output = {{},{},{}}
 	local imageX, imageY = 0, 0
+	local imSX, imSY
 	for i = 1, #images do
-		imageY = math.max(imageY, #images[i][1][1]+(images[i][3]-1))
+		imageY = math.max(
+			imageY,
+			#images[i][1][1] + (images[i][3] == true and 0 or (images[i][3] - 1))
+		)
 		for y = 1, #images[i][1][1] do
-			imageX = math.max(imageX, #images[i][1][1][y]+(images[i][2]-1))
+			imageX = math.max(
+				imageX,
+				#images[i][1][1][y] + (images[i][2] == true and 0 or (images[i][2] - 1))
+			)
+		end
+	end
+	-- if either coordinate is true, center it
+	for i = 1, #images do
+		imSX, imSY = getSize(images[i][1])
+		if images[i][2] == true then
+			images[i][2] = round(1 + (imageX / 2) - (imSX / 2))
+		end
+		if images[i][3] == true then
+			images[i][3] = round(1 + (imageY / 2) - (imSY / 2))
 		end
 	end
 
