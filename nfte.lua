@@ -306,42 +306,45 @@ end
 nfte.unloadImage = unloadImage
 
 -- draws an image with the topleft corner at (x, y)
-drawImage = function(image, x, y)
+drawImage = function(image, x, y, terminal)
 	assert(checkValid(image), "Invalid image.")
 	assert(type(x) == "number", "x value must be number, got " .. type(x))
 	assert(type(y) == "number", "y value must be number, got " .. type(y))
-	local cx, cy = term.getCursorPos()
+	terminal = terminal or term.current()
+	local cx, cy = terminal.getCursorPos()
 	for iy = 1, #image[1] do
-		term.setCursorPos(x, y + (iy - 1))
-		term.blit(image[1][iy], image[2][iy], image[3][iy])
+		terminal.setCursorPos(x, y + (iy - 1))
+		terminal.blit(image[1][iy], image[2][iy], image[3][iy])
 	end
-	term.setCursorPos(cx,cy)
+	terminal.setCursorPos(cx,cy)
 end
 nfte.drawImage = drawImage
 
 -- draws an image with the topleft corner at (x, y), with transparency
-drawImageTransparent = function(image, x, y)
+drawImageTransparent = function(image, x, y, terminal)
 	assert(checkValid(image), "Invalid image.")
 	assert(type(x) == "number", "x value must be number, got " .. type(x))
 	assert(type(y) == "number", "y value must be number, got " .. type(y))
-	local cx, cy = term.getCursorPos()
+	terminal = terminal or term.current()
+	local cx, cy = terminal.getCursorPos()
 	local c, t, b
 	for iy = 1, #image[1] do
 		for ix = 1, #image[1][iy] do
 			c, t, b = image[1][iy]:sub(ix,ix), image[2][iy]:sub(ix,ix), image[3][iy]:sub(ix,ix)
-			if not (b == " " and c == " ") then
-				term.setCursorPos(x + (ix - 1), y + (iy - 1))
-				term.blit(c, t, b)
+			if b ~= " " or c ~= " " then
+				terminal.setCursorPos(x + (ix - 1), y + (iy - 1))
+				terminal.blit(c, t, b)
 			end
 		end
 	end
-	term.setCursorPos(cx,cy)
+	terminal.setCursorPos(cx,cy)
 end
 nfte.drawImageTransparent = drawImageTransparent
 
 -- draws an image centered at (x, y) or center screen
-drawImageCenter = function(image, x, y)
-	local scr_x, scr_y = term.getSize()
+drawImageCenter = function(image, x, y, terminal)
+	terminal = terminal or term.current()
+	local scr_x, scr_y = terminal.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImage(
 		image,
@@ -354,8 +357,9 @@ nfte.drawImageCenter = drawImageCenter
 nfte.drawImageCentre = drawImageCenter
 
 -- draws an image centered at (x, y) or center screen, with transparency
-drawImageCenterTransparent = function(image, x, y)
-	local scr_x, scr_y = term.getSize()
+drawImageCenterTransparent = function(image, x, y, terminal)
+	terminal = terminal or term.current()
+	local scr_x, scr_y = terminal.getSize()
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(
 		image,
@@ -667,22 +671,24 @@ merge = function(...)
 end
 nfte.merge = merge
 
+local rotatePoint = function(x, y, angle, originX, originY)
+	return
+		round( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) ) + originX,
+		round( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) ) + originY
+end
+
 -- rotates an image around (originX, originY) or its center, by angle radians
 rotateImage = function(image, angle, originX, originY)
-	local output = {{},{},{}}
-	local realOutput = {{},{},{}}
-	local tx, ty
-	local imageX, imageY = getSize(image)
+	assert(checkValid(image), "Invalid image.")
 	if imageX == 0 or imageY == 0 then
 		return image
 	end
+	local output = {{},{},{}}
+	local realOutput = {{},{},{}}
+	local tx, ty, corners
+	local imageX, imageY = getSize(image)
 	local originX, originY = originX or math.floor(imageX / 2), originY or math.floor(imageY / 2)
-	local rotatePoint = function(x, y, angle, originX, originY)
-		return
-			round( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) ) + originX,
-			round( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) ) + originY
-	end
-	local corners = {
+	corners = {
 		{rotatePoint(1, 		1, 		angle, originX, originY)},
 		{rotatePoint(imageX, 	1, 		angle, originX, originY)},
 		{rotatePoint(1, 		imageY, angle, originX, originY)},
