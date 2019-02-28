@@ -18,7 +18,8 @@ local map = {
 	y = 0,
 	pitch = 0,
 	rotate = 0,
-	horizon = 9
+	horizon = 9,
+	zoom = 1,
 }
 
 map.image = {
@@ -98,16 +99,20 @@ local tsv = function(visible)
 end
 
 local render = function()
-	tsv(false)
+	--tsv(false)
 	local im = nfte.rotateImage(map.image, math.rad(map.rotate))
 	local rimX, rimY = nfte.getSize(im)
 	im = nfte.stretchImage(
 		im,
-		rimX,
-		rimY * math.cos(math.rad(map.pitch))
+		rimX * map.zoom,
+		rimY * math.cos(math.rad(map.pitch)) * map.zoom
 	)
 	term.clear()
-	nfte.drawImageCenter(im)
+	nfte.drawImageCenter(
+		im,
+		math.floor(0.5 + scr_x / 2 + map.x),
+		(0.5 + scr_y / 2 + map.y)
+	)
 	tsv(true)
 end
 
@@ -120,7 +125,7 @@ while true do
 		map.pitch = ((evt[4] - scr_y / 2) / (scr_y / 2)) * 90
 		render()
 	elseif evt[1] == "key" then
-		if evt[2] == keys.q then
+		if evt[2] == keys.x then
 			sleep(0)
 			return
 		elseif evt[2] == keys.left then
@@ -134,6 +139,24 @@ while true do
 			render()
 		elseif evt[2] == keys.down then
 			map.pitch = map.pitch - 4
+			render()
+		elseif evt[2] == keys.w then
+			map.zoom = map.zoom + 0.02
+			render()
+		elseif evt[2] == keys.s then
+			map.zoom = map.zoom - 0.02
+			render()
+		elseif evt[2] == keys.a then
+			map.x = map.x + 1
+			render()
+		elseif evt[2] == keys.d then
+			map.x = map.x - 1
+			render()
+		elseif evt[2] == keys.e then
+			map.y = map.y + 1
+			render()
+		elseif evt[2] == keys.q then
+			map.y = map.y - 1
 			render()
 		end
 	end
