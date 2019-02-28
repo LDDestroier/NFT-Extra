@@ -128,23 +128,27 @@ Rotates the image around (originX, originY) by 'angles' degrees. The origin defa
 
 ### Image drawing
 ```
-nfte.drawImage( imageData, x, y )
+nfte.drawImage( imageData, x, y, terminal )
 ```
 Draws an image at (x, y). All transparency is set to black.
+Draws to term.current() if terminal is undefined.
 
 ```
-nfte.drawImageTransparent(image, x, y)
+nfte.drawImageTransparent(image, x, y, terminal)
 ```
 Draws an image at (x, y), but with transparency. As such, it's not quite as speedy as the former.
+Draws to term.current() if terminal is undefined.
 
 ```
-nfte.drawImageCenter( image, x, y )
+nfte.drawImageCenter( image, x, y, terminal )
 ```
 Draws an image centered around (x, y). All transparency is set to black.
+Draws to term.current() if terminal is undefined.
 You British peasants can call nfte.drawImageCentre().
 
 ```
-nfte.drawImageCenterTransparent( image, x, y )
+nfte.drawImageCenterTransparent( image, x, y, terminal )
 ```
 Draws an image centered around (x, y). And it's also got transparency, hey. Again, it's not quite as speedy as the former.
+Draws to term.current() if terminal is undefined.
 Those formerly of the EU can call nfte.drawImageCentreTransparent().
