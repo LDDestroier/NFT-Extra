@@ -555,7 +555,7 @@ stretchImage = function(_image, sx, sy, noRepeat)
 		for y = 1, sy do
 			for x = 1, sx do
 				tx = round((x / sx) * imageX)
-				ty = round((y / sy) * imageY)
+				ty = math.ceil((y / sy) * imageY)
 				if not noRepeat then
 					output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
 				else
@@ -716,7 +716,7 @@ rotateImage = function(image, angle, originX, originY)
 		output[2][y] = table.concat(output[2][y])
 		output[3][y] = table.concat(output[3][y])
 	end
-	return output, round(minX), round(minY)
+	return output, math.ceil(minX), math.ceil(minY)
 end
 nfte.rotateImage = rotateImage
 
@@ -751,7 +751,7 @@ help = function(input)
 		return helpOut[input] or "That function doesn't have a help text...? That's not right."
 	else
 		return helpOut[input] or "No such function."
-	end 
+	end
 end
 nfte.help = help
 
