@@ -16,8 +16,7 @@ local scr_x, scr_y = term.getSize()
 local map = {
 	x = 0,
 	y = 0,
-	xsize = scr_x - 6,
-	ysize = scr_y - 10,
+	pitch = 0,
 	rotate = 0,
 	horizon = 9
 }
@@ -91,21 +90,57 @@ map.image = {
 	}
 }
 
+term.clear()
+map.image = nfte.stretchImageKeepAspect(map.image, scr_x, scr_y) -- scr_x, scr_y)
+local imX, imY = nfte.getSize(map.image)
+
+--nfte.drawImageCenter(map.image)
+--error()
+
+local tsv = function(visible)
+	if term.current().setVisible then
+		term.current().setVisible(visible)
+	end
+end
+
 local render = function()
-	local im = map.image
-	im = nfte.rotateImage(im, math.rad(map.rotate))
-	im = nfte.stretchImage(im, map.xsize, map.ysize + math.abs(math.sin(math.rad(map.rotate * 2)) * 6))
+	tsv(false)
+	local im = nfte.rotateImage(map.image, math.rad(map.rotate))
+	local rimX, rimY = nfte.getSize(im)
+	im = nfte.stretchImage(
+		im,
+		rimX,
+		rimY * math.cos(math.rad(map.pitch))
+	)
 	term.clear()
 	nfte.drawImageCenter(im)
+	tsv(true)
 end
+
+render()
 
 while true do
 	local evt = {os.pullEvent()}
 	if evt[1] == "mouse_click" or evt[1] == "mouse_drag" then
-		map.rotate = (evt[3] + math.floor(scr_x / 2)) * 6
-		map.ysize = scr_y * (math.floor(evt[4] - scr_y / 2) / 5)
-	elseif evt[1] == "key" and evt[2] == keys.q then
-		return
+		map.rotate = (evt[3] + math.floor(scr_x / 2)) * 8
+		map.pitch = ((evt[4] - scr_y / 2) / (scr_y / 2)) * 90
+		render()
+	elseif evt[1] == "key" then
+		if evt[2] == keys.q then
+			sleep(0)
+			return
+		elseif evt[2] == keys.left then
+			map.rotate = map.rotate + 2
+			render()
+		elseif evt[2] == keys.right then
+			map.rotate = map.rotate - 2
+			render()
+		elseif evt[2] == keys.up then
+			map.pitch = map.pitch + 4
+			render()
+		elseif evt[2] == keys.down then
+			map.pitch = map.pitch - 4
+			render()
+		end
 	end
-	render()
 end
