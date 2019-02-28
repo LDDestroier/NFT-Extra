@@ -10,12 +10,12 @@ Stretch, merge, flip, rotate, and more. Can be loaded in a regular Lua 5.2 termi
 ```
 imageData = nfte.loadImage( pathToImage )
 ```
-Loads an image from a specific path.
+Loads an image (NFP, NFT, ANFT) from a specific path.
 
 ```
 imageData = nfte.loadImageData( contentsOfImage )
 ```
-Loads an image based on the contents of the image, rather than the path to the image.
+Loads an image (NFP, NFT, ANFT) based on the contents of the image, rather than the path to the image.
 
 ```
 imageData = nfte.convertFromNFP( contentsOfNFP )
@@ -103,6 +103,11 @@ stretchedImage = nfte.stretchImage( imageData, newWidth, newHeight, doNotRepeatC
 ```
 Scales the image to (newWidth, newHeight).
 If doNotRepeatChar is true, it will not repeat characters within the image, which would make images with text in them read like "hhheeellllllooo   wwwooorrrlllddd" instead of " h  e  l  l  o     w  o  r  l  d ".
+
+```
+largerImage = nfte.stretchImageKeepAspect( imageData, maxWidth, maxHeight, doNotRepeatChar )
+```
+Same thing as stretchImage, but will make sure not to alter the aspect ratio of the image. Think of it like sizing up the image to fit a box of the size (maxWidth, maxHeight).
 
 ```
 pixelyImage = nfte.pixelateImage( imageData, amountX, amountY )
