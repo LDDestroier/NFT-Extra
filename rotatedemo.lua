@@ -1,32 +1,20 @@
+local tArg = {...}
 local nftePath = "/nfte.lua"
 if not fs.exists(nftePath) then
 	local haych = http.get("https://raw.githubusercontent.com/LDDestroier/NFT-Extra/master/nfte.lua")
-	if haych then
-		local file = fs.open(nftePath, "w")
-		file.write(haych.readAll())
-		file.close()
-	else
-		error("Can't download NFTE! How can I work as a good demo now!?")
-	end
+	if haych then local file = fs.open(nftePath, "w") file.write(haych.readAll()) file.close() else error("Can't download NFTE! How can I work as a good demo now!?") end
 end
-
 local nfte = dofile "nfte.lua"
 local scr_x, scr_y = term.getSize()
-
 local map = {
-	x = 0,
-	y = 0,
+	x = 0, y = 0,
 	pitch = 0,
 	rotate = 0,
 	horizon = 9,
 	zoom = 1,
 }
-
-local tArg = {...}
-if tArg[1] then
-	map.image = nfte.loadImage(tArg[1])
-else
-	map.image = {
+local keysDown, miceDown = {}, {}
+if tArg[1] then map.image = nfte.loadImage(tArg[1]) else map.image = {
 		{
 			"                                                   ",
 			"                                                   ",
@@ -47,8 +35,7 @@ else
 			"                                                   ",
 			"                                                   ",
 			"                                                   ",
-		},
-		{
+		}, {
 			"                                                   ",
 			"                                                   ",
 			"                                                   ",
@@ -68,8 +55,7 @@ else
 			"                                                   ",
 			"                                                   ",
 			"                                                   ",
-		},
-		{
+		}, {
 			"ccccccccccccccccccccccccccccccccccccccccccccccccccc",
 			"ccccccccccccc0eccceec0ccc0ccc0ccc0ccee0cccccccccccc",
 			"ccccccccccccccee00ee0000000c0000000eeeccccccccccccc",
@@ -92,77 +78,62 @@ else
 		},
 	}
 end
-
 local imX, imY = nfte.getSize(map.image)
-term.clear()
 map.image = nfte.stretchImageKeepAspect(map.image, scr_x, scr_y)
-
-local tsv = function(visible)
-	if term.current().setVisible then
-		term.current().setVisible(visible)
-	end
-end
-
+local tsv = function(visible) if term.current().setVisible then term.current().setVisible(visible) end end
 local render = function()
-	--tsv(false)
+	tsv(false)
 	local im = nfte.rotateImage(map.image, math.rad(map.rotate))
 	local rimX, rimY = nfte.getSize(im)
-	im = nfte.stretchImage(
-		im,
-		rimX * map.zoom,
-		rimY * math.cos(math.rad(map.pitch)) * map.zoom
-	)
+	im = nfte.stretchImage(im, rimX * map.zoom, rimY * math.cos(math.rad(map.pitch)) * map.zoom)
 	term.clear()
-	nfte.drawImageCenter(
-		im,
-		math.floor(0.5 + scr_x / 2 + map.x),
-		(0.5 + scr_y / 2 + map.y)
-	)
+	nfte.drawImageCenter(im, math.floor(0.5 + scr_x / 2 + map.x), (0.5 + scr_y / 2 + map.y))
 	tsv(true)
 end
-
 render()
-
-while true do
-	local evt = {os.pullEvent()}
-	if evt[1] == "mouse_click" or evt[1] == "mouse_drag" then
-		map.rotate = (evt[3] + math.floor(scr_x / 2)) * 8
-		map.pitch = ((evt[4] - scr_y / 2) / (scr_y / 2)) * 90
-		render()
-	elseif evt[1] == "key" then
-		if evt[2] == keys.x then
-			sleep(0)
-			return
-		elseif evt[2] == keys.left then
-			map.rotate = map.rotate + 2
+local control = function()
+	local doRender = false
+	while true do
+		if miceDown[1] then
+			map.rotate = (miceDown[1][1] + math.floor(scr_x / 2)) * 8
+			map.pitch = ((miceDown[1][2] - scr_y / 2) / (scr_y / 2)) * 90
 			render()
-		elseif evt[2] == keys.right then
-			map.rotate = map.rotate - 2
-			render()
-		elseif evt[2] == keys.up then
-			map.pitch = map.pitch + 4
-			render()
-		elseif evt[2] == keys.down then
-			map.pitch = map.pitch - 4
-			render()
-		elseif evt[2] == keys.w then
-			map.zoom = map.zoom + 0.02
-			render()
-		elseif evt[2] == keys.s then
-			map.zoom = map.zoom - 0.02
-			render()
-		elseif evt[2] == keys.a then
-			map.x = map.x + 1
-			render()
-		elseif evt[2] == keys.d then
-			map.x = map.x - 1
-			render()
-		elseif evt[2] == keys.e then
-			map.y = map.y + 1
-			render()
-		elseif evt[2] == keys.q then
-			map.y = map.y - 1
-			render()
+		else
+			if keysDown[keys.x] then
+				sleep(0) return
+			end if keysDown[keys.left] then
+				map.rotate = map.rotate - 2 doRender = true
+			end if keysDown[keys.right] then
+				map.rotate = map.rotate + 2 doRender = true
+			end if keysDown[keys.up] then
+				map.pitch = map.pitch + 4 doRender = true
+			end if keysDown[keys.down] then
+				map.pitch = map.pitch - 4 doRender = true
+			end if keysDown[keys.w] then
+				map.zoom = map.zoom + 0.02 doRender = true
+			end if keysDown[keys.s] then
+				map.zoom = map.zoom - 0.02 doRender = true
+			end if keysDown[keys.a] then
+				map.x = map.x + 1 doRender = true
+			end if keysDown[keys.d] then
+				map.x = map.x - 1 doRender = true
+			end if keysDown[keys.e] then
+				map.y = map.y + 1 doRender = true
+			end if keysDown[keys.q] then
+				map.y = map.y - 1 doRender = true
+			end
+			if doRender then render() doRender = false end
 		end
+		sleep(0.05)
 	end
 end
+local getInput = function()
+	while true do
+		local evt = {os.pullEvent()}
+		if evt[1] == "mouse_click" or evt[1] == "mouse_drag" then miceDown[evt[2]] = {evt[3],evt[4]}
+		elseif evt[1] == "mouse_up" then miceDown[evt[2]] = nil
+		elseif evt[1] == "key" then keysDown[evt[2]] = true
+		elseif evt[1] == "key_up" then keysDown[evt[2]] = nil end
+	end
+end
+parallel.waitForAny(getInput, control)
