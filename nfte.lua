@@ -239,7 +239,7 @@ loadImageData = function(image, background)
 			if L then L = L + 2 end
 		end
 		return output, "anft"
-	elseif image:find(tchar) and image:find(bchar) then
+	elseif image:find(tchar) or image:find(bchar) then
 		return loadImageDataNFT(image, background), "nft"
 	else
 		return convertFromNFP(image), "nfp"
@@ -554,8 +554,8 @@ stretchImage = function(_image, sx, sy, noRepeat)
 	else
 		for y = 1, sy do
 			for x = 1, sx do
-				tx = math.ceil((x / sx) * imageX)
-				ty = math.ceil((y / sy) * imageY)
+				tx = round((x / sx) * imageX)
+				ty = round((y / sy) * imageY)
 				if not noRepeat then
 					output[1][y] = (output[1][y] or "")..image[1][ty]:sub(tx,tx)
 				else
@@ -569,8 +569,8 @@ stretchImage = function(_image, sx, sy, noRepeat)
 			for y = 1, imageY do
 				for x = 1, imageX do
 					if image[1][y]:sub(x,x) ~= " " then
-						tx = math.ceil(((x / imageX) * sx) - ((0.5 / imageX) * sx))
-						ty = math.ceil(((y / imageY) * sy) - ((0.5 / imageY) * sx))
+						tx = round(((x / imageX) * sx) - ((0.5 / imageX) * sx))
+						ty = round(((y / imageY) * sy) - ((0.5 / imageY) * sx))
 						output[1][ty] = stringWrite(output[1][ty], tx, image[1][y]:sub(x,x))
 					end
 				end
@@ -588,9 +588,11 @@ stretchImageKeepAspect = function(image, sx, sy, noRepeat)
 	local aspect = sx / sy
 	local imAspect = imX / imY
 	if imAspect > aspect then
-		return nfte.stretchImage(image, sx, sx / imAspect)
+		return nfte.stretchImage(image, sx, sx / imAspect, noRepeat)
+	elseif imAspect < aspect then
+		return nfte.stretchImage(image, sy * imAspect, sy, noRepeat)
 	else
-		return nfte.stretchImage(image, sy * imAspect, sy)
+		return nfte.stretchImage(image, sx, sy, noRepeat)
 	end
 end
 nfte.stretchImageKeepAspect = stretchImageKeepAspect
@@ -714,7 +716,7 @@ rotateImage = function(image, angle, originX, originY)
 		output[2][y] = table.concat(output[2][y])
 		output[3][y] = table.concat(output[3][y])
 	end
-	return output, math.ceil(minX), math.ceil(minY)
+	return output, round(minX), round(minY)
 end
 nfte.rotateImage = rotateImage
 
