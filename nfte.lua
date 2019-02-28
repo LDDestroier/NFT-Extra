@@ -215,10 +215,12 @@ convertFromNFP = function(image, background)
 		output[2][y] = ""
 		output[3][y] = ""
 		for x = 1, imageX do
-			bx = (x % #background) + 1
-			output[1][y] = output[1][y]..lb[image[y][x] or background:sub(bx,bx)]
-			output[2][y] = output[2][y]..lb[image[y][x] or background:sub(bx,bx)]
-			output[3][y] = output[3][y]..lb[image[y][x] or background:sub(bx,bx)]
+			if image[y][x] then
+				bx = (x % #background) + 1
+				output[1][y] = output[1][y]..lb[image[y][x] or background:sub(bx,bx)]
+				output[2][y] = output[2][y]..lb[image[y][x] or background:sub(bx,bx)]
+				output[3][y] = output[3][y]..lb[image[y][x] or background:sub(bx,bx)]
+			end
 		end
 	end
 	return output
@@ -348,8 +350,8 @@ drawImageCenter = function(image, x, y, terminal)
 	local imageX, imageY = getSize(image)
 	return drawImage(
 		image,
-		round(1 + (x and x or (scr_x/2)) - imageX/2),
-		round(1 + (y and y or (scr_y/2)) - imageY/2),
+		round(0.5 + (x and x or (scr_x/2)) - imageX/2),
+		round(0.5 + (y and y or (scr_y/2)) - imageY/2),
 		terminal
 	)
 end
@@ -364,8 +366,8 @@ drawImageCenterTransparent = function(image, x, y, terminal)
 	local imageX, imageY = getSize(image)
 	return drawImageTransparent(
 		image,
-		round(1 + (x and x or (scr_x/2)) - imageX/2),
-		round(1 + (y and y or (scr_y/2)) - imageY/2),
+		round(0.5 + (x and x or (scr_x/2)) - imageX/2),
+		round(0.5 + (y and y or (scr_y/2)) - imageY/2),
 		terminal
 	)
 end
