@@ -4,6 +4,10 @@ local tchar = string.char(31)	-- for text colors
 local bchar = string.char(30)	-- for background colors
 local nchar = string.char(29)	-- for differentiating multiple frames in ANFT
 
+local round = function(num)
+	return math.floor(num + 0.5)
+end
+
 local deepCopy
 deepCopy = function(tbl)
 	local output = {}
@@ -581,8 +585,8 @@ rotateImage = function(image, angle, originX, originY)
 	local originX, originY = originX or math.floor(imageX / 2), originY or math.floor(imageY / 2)
 	local rotatePoint = function(x, y, angle, originX, originY)
 		return
-			math.floor( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) ) + originX,
-			math.floor( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) ) + originY
+			round( (x-originX) * math.cos(angle) - (y-originY) * math.sin(angle) ) + originX,
+			round( (x-originX) * math.sin(angle) + (y-originY) * math.cos(angle) ) + originY
 	end
 	local corners = {
 		{rotatePoint(1, 		1, 		angle, originX, originY)},
@@ -600,14 +604,16 @@ rotateImage = function(image, angle, originX, originY)
 		output[2][y] = {}
 		output[3][y] = {}
 		for x = 1, (maxX - minX) + 1 do
-			tx, ty = rotatePoint(x + minX, y + minY, -angle, originX, originY)
+			tx, ty = rotatePoint(x + minX - 1, y + minY - 1, -angle, originX, originY)
 			output[1][y][x] = " "
 			output[2][y][x] = " "
 			output[3][y][x] = " "
-			if image[1][ty] and tx > 0 then
-				output[1][y][x] = image[1][ty]:sub(tx,tx)
-				output[2][y][x] = image[2][ty]:sub(tx,tx)
-				output[3][y][x] = image[3][ty]:sub(tx,tx)
+			if image[1][ty] then
+				if tx >= 1 and tx <= #image[1][ty] then
+					output[1][y][x] = image[1][ty]:sub(tx,tx)
+					output[2][y][x] = image[2][ty]:sub(tx,tx)
+					output[3][y][x] = image[3][ty]:sub(tx,tx)
+				end
 			end
 		end
 	end
