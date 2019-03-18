@@ -390,7 +390,7 @@ colourSwap = colorSwap
 nfte.colorSwap = colorSwap
 nfte.colourSwap = colorSwap
 
--- every flippable block character that doesn't needa  color swap
+-- every flippable block character that doesn't need a color swap
 local xflippable = {
 	["\129"] = "\130",
 	["\132"] = "\136",
@@ -399,7 +399,6 @@ local xflippable = {
 	["\135"] = "\139",
 	["\140"] = "\140",
 	["\141"] = "\142",
-	["\143"] = "\143",
 }
 -- every flippable block character that needs a color swap
 local xinvertable = {
@@ -408,7 +407,10 @@ local xinvertable = {
 	["\146"] = "\158",
 	["\147"] = "\156",
 	["\148"] = "\151",
-	["\152"] = "\155"
+	["\152"] = "\155",
+	["\149"] = "\149",
+	["\150"] = "\150",
+	["\153"] = "\153"
 }
 for k,v in pairs(xflippable) do
 	xflippable[v] = k
@@ -429,9 +431,6 @@ flipX = function(image)
 			if xinvertable[image[1][y]:sub(x,x)] then
 				output[2][y] = image[3][y]:sub(x,x) .. output[2][y]
 				output[3][y] = image[2][y]:sub(x,x) .. output[3][y]
-			elseif xflippable[image[1][y]:sub(x,x)] then
-				output[2][y] = xflippable[image[2][y]:sub(x,x)] .. output[2][y]
-				output[3][y] = xflippable[image[3][y]:sub(x,x)] .. output[3][y]
 			else
 				output[2][y] = image[2][y]:sub(x,x) .. output[2][y]
 				output[3][y] = image[3][y]:sub(x,x) .. output[3][y]
